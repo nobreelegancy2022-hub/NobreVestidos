@@ -1,0 +1,26 @@
+COMO ATUALIZAR O SISTEMA
+========================
+
+1. Feche o sistema (Ctrl+C no terminal)
+
+2. Apague a pasta loja_v2 antiga:
+   - No Windows Explorer, delete a pasta loja_v2
+
+3. Extraia o novo ZIP na mesma localização
+
+4. IMPORTANTE: apague o arquivo loja.db dentro da pasta loja_v2
+   (ele fica em: loja_v2\instance\loja.db  OU  loja_v2\loja.db)
+   Isso é necessário para recriar o usuário Isaac corretamente.
+   *** Seus dados de contratos e estoque serão perdidos ao apagar o banco ***
+   *** Se não quiser perder os dados, NÃO apague o loja.db ***
+
+5. Abra o CMD dentro da pasta loja_v2
+
+6. Execute: python run.py
+
+7. Acesse: http://localhost:5000
+   Login: Isaac
+   Senha: 753951
+
+ATENÇÃO: Se mantiver o loja.db antigo, o login continuará sendo
+admin@loja.com / admin123. Para trocar, delete o loja.db.

@@ -1,0 +1,24 @@
+ONDE ESTÃO SEUS DADOS (loja.db)
+================================
+
+Quando você roda "python run.py", o Flask cria o banco de dados
+em uma dessas localizações:
+
+  loja_v2\instance\loja.db   ← LOCAL MAIS COMUM
+  loja_v2\loja.db            ← Alternativo
+
+Para não perder seus dados ao atualizar:
+
+1. ANTES de substituir a pasta loja_v2, copie o loja.db para
+   um lugar seguro (ex: Área de Trabalho)
+
+2. Depois de extrair o novo ZIP, coloque o loja.db de volta
+   na mesma pasta onde estava (instance\ ou raiz)
+
+3. Rode python run.py normalmente — seus dados estarão lá
+
+PARA ENCONTRAR SEU loja.db AGORA:
+- Abra o Windows Explorer
+- Entre na pasta loja_v2
+- Procure uma pasta chamada "instance" — o loja.db deve estar lá
+- Se não tiver "instance", procure na raiz da loja_v2
