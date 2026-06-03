@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block title %}Contratos{% endblock %}
+{% block content %}
+
+<style>
+  body, .main { background: #18080f; color: #e0e8f0; }
+  h4.page-titulo { font-size: 1.5rem; font-weight: 700; color: #e0e8f0; margin-bottom: 2px; }
+  .page-sub { font-size: 0.85rem; color: #f48fb1; margin-bottom: 1.2rem; }
+
+  .busca-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+  .busca-label { font-size: 0.8rem; font-weight: 600; color: #f48fb1; display: flex; align-items: center; gap: 5px; }
+  .busca-input {
+    background: #220d17; border: 1px solid #c2185b; color: #e0e8f0;
+    border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; width: 220px;
+  }
+  .busca-input:focus { outline: none; border-color: #f06292; }
+  .busca-input::placeholder { color: #a06070; }
+
+  .filtros { display: flex; gap: 8px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .filtro-btn {
+    padding: 5px 18px; border-radius: 20px; border: 1px solid #c2185b;
+    background: transparent; color: #f48fb1; font-size: 0.82rem; cursor: pointer;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .filtro-btn:hover { border-color: #f06292; color: #e0e8f0; }
+  .filtro-btn.ativo { background: #c2185b; color: #e0e8f0; border-color: #f06292; }
+
+  .contratos-box {
+    background: #2e1020; border: 1px solid #c2185b; border-radius: 12px; overflow: hidden;
+  }
+  .contratos-header {
+    display: grid;
+    grid-template-columns: 70px 180px 140px 1fr 80px 110px 160px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #c2185b;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #d06080;
+  }
+  .contrato-row {
+    display: grid;
+    grid-template-columns: 70px 180px 140px 1fr 80px 110px 160px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #361525;
+    align-items: start;
+    transition: background 0.1s;
+  }
+  .contrato-row:last-child { border-bottom: none; }
+  .contrato-row:hover { background: #361525; }
+
+  .num { color: #e8b84b; font-weight: 700; font-size: 0.88rem; }
+  .cliente-nome { color: #e0e8f0; font-size: 0.88rem; }
+  .periodo { font-size: 0.8rem; color: #f48fb1; line-height: 1.5; }
+  .periodo span { display: block; }
+  .pecas-resumo { font-size: 0.78rem; color: #7a9ab8; line-height: 1.5; }
+  .valor { font-size: 0.88rem; color: #e0e8f0; }
+
+  /* Badges de status */
+  .badge-ativo     { background: #0d2040; color: #60a5fa; border: 1px solid #1e4080; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .badge-devolvido { background: #0d3321; color: #4ade80; border: 1px solid #1a5c33; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .badge-atrasado  { background: #3d1525; color: #f87171; border: 1px solid #6b2020; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; }
+  .badge-cancelado { background: #1a1a2e; color: #6b7280; border: 1px solid #2d2d44; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; }
+
+  /* Botões de ação */
+  .acoes { display: flex; flex-direction: column; gap: 5px; }
+  .btn-detalhes {
+    background: transparent; border: 1px solid #d81b60; color: #f48fb1;
+    border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer;
+    text-decoration: none; text-align: center; transition: all 0.15s;
+  }
+  .btn-detalhes:hover { border-color: #f06292; color: #e0e8f0; }
+  .btn-contrato {
+    background: #c2185b; border: 1px solid #e91e8c; color: #e0e8f0;
+    border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer;
+    text-decoration: none; text-align: center; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .btn-contrato:hover { background: #d81b60; color: #fff; }
+  .btn-excluir {
+    background: transparent; border: 1px solid #3d1525; color: #f87171;
+    border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer;
+    text-align: center; transition: all 0.15s; width: 100%;
+  }
+  .btn-excluir:hover { background: #3d1525; }
+
+  /* Modal detalhes */
+  .modal-content { background: #2e1020; border: 1px solid #c2185b; color: #e0e8f0; border-radius: 12px; }
+  .modal-header { border-bottom: 1px solid #c2185b; }
+  .modal-footer { border-top: 1px solid #c2185b; }
+  .modal-title { color: #e8b84b; }
+  .detalhe-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #f48fb1; }
+  .detalhe-val { color: #e0e8f0; font-size: 0.88rem; margin-bottom: 8px; }
+
+
+  /* Dropdown de status */
+  .select-status {
+    border: none; border-radius: 20px; padding: 4px 10px;
+    font-size: 0.75rem; font-weight: 600; cursor: pointer;
+    outline: none; -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='currentColor' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+    padding-right: 24px;
+  }
+  .select-ativo     { background-color:#0d2040; color:#60a5fa; }
+  .select-devolvido { background-color:#0d3321; color:#4ade80; }
+  .select-atrasado  { background-color:#3d1525; color:#f87171; }
+  .select-cancelado { background-color:#1a1a2e; color:#6b7280; }
+  .select-ativo option, .select-devolvido option,
+  .select-atrasado option, .select-cancelado option { background:#2e1020; color:#e0e8f0; }
+  .vazio { text-align: center; padding: 3rem; color: #a06070; font-size: 0.9rem; }
+</style>
+
+<h4 class="page-titulo">Contratos</h4>
+<p class="page-sub">Use a busca para encontrar um cliente rapidamente.</p>
+
+<!-- Busca -->
+<form method="GET" class="busca-wrap">
+  <span class="busca-label"><i class="bi bi-search"></i> BUSCAR:</span>
+  <input type="text" name="busca" class="busca-input"
+         placeholder="Nome do cliente..." value="{{ busca }}" autocomplete="off">
+  <input type="hidden" name="status" value="{{ filtro_status }}">
+</form>
+
+<!-- Filtros -->
+<div class="filtros">
+  {% for val, label in [('','Todos'),('ativo','Ativo'),('atrasado','Atrasado'),('devolvido','Devolvido'),('cancelado','Cancelado')] %}
+  <a href="?status={{ val }}&busca={{ busca }}"
+     class="filtro-btn {% if filtro_status == val %}ativo{% endif %}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Tabela -->
+<div class="contratos-box">
+  <div class="contratos-header">
+    <span>Nº</span>
+    <span>Cliente</span>
+    <span>Período</span>
+    <span>Peças</span>
+    <span>Valor</span>
+    <span>Status</span>
+    <span>Ações</span>
+  </div>
+
+  {% for c in contratos %}
+  {% set pecas_txt = c.itens | map(attribute='peca') | map(attribute='cor') | list %}
+  <div class="contrato-row">
+
+    <!-- Nº -->
+    <div class="num">#{{ "%04d"|format(c.id) }}</div>
+
+    <!-- Cliente -->
+    <div class="cliente-nome">{{ c.cliente.nome }}</div>
+
+    <!-- Período -->
+    <div class="periodo">
+      <span>{{ c.data_retirada.strftime('%d/%m/%Y') }} →</span>
+      <span>{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '—' }}</span>
+    </div>
+
+    <!-- Peças resumidas -->
+    <div class="pecas-resumo">
+      {% for item in c.itens %}
+        {{ item.peca.cor or '' }}{% if item.peca.modelo %} - {{ item.peca.modelo }}{% endif %}{% if item.peca.tamanho %} - {{ item.peca.tamanho }}{% endif %}{% if not loop.last %} / {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Valor -->
+    <div class="valor">{{ "%.2f"|format(c.valor_total) }}</div>
+
+    <!-- Status -->
+    <div>
+      <form method="POST" action="/contratos/{{ c.id }}/status">
+        <select name="status" class="select-status select-{{ c.status }}"
+                onchange="this.form.submit()">
+          <option value="ativo"     {% if c.status == 'ativo' %}selected{% endif %}>Ativo</option>
+          <option value="atrasado"  {% if c.status == 'atrasado' %}selected{% endif %}>Atrasado</option>
+          <option value="devolvido" {% if c.status == 'devolvido' %}selected{% endif %}>Devolvido</option>
+          <option value="cancelado" {% if c.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Ações -->
+    <div class="acoes">
+      <a href="#" class="btn-detalhes"
+         onclick="abrirDetalhes({{ c.id }}, '{{ c.cliente.nome }}', '{{ c.data_retirada.strftime('%d/%m/%Y') }}', '{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '-' }}', '{{ c.status }}', '{{ '%.2f'|format(c.valor_total) }}', '{{ '%.2f'|format(c.saldo_restante) }}', `{% for item in c.itens %}{{ item.peca.tipo }} {{ item.peca.cor }} {{ item.peca.tamanho }}{% if not loop.last %} / {% endif %}{% endfor %}`); return false;">
+        Detalhes
+      </a>
+      <a href="{{ url_for('contratos.pdf', id=c.id) }}" target="_blank" class="btn-contrato">
+        <i class="bi bi-file-earmark-text"></i> Contrato
+      </a>
+      <form method="POST" action="{{ url_for('contratos.excluir', id=c.id) }}"
+            onsubmit="return confirm('Excluir contrato #{{ '%04d'|format(c.id) }}? Esta ação não pode ser desfeita.')">
+        <button type="submit" class="btn-excluir">Excluir</button>
+      </form>
+    </div>
+
+  </div>
+  {% else %}
+  <div class="vazio">Nenhum contrato encontrado.</div>
+  {% endfor %}
+</div>
+
+<!-- Modal Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i>Detalhes do Contrato</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="detalhe-label">Cliente</div>
+            <div class="detalhe-val" id="d-cliente"></div>
+          </div>
+          <div class="col-6">
+            <div class="detalhe-label">Status</div>
+            <div class="detalhe-val" id="d-status"></div>
+          </div>
+          <div class="col-6">
+            <div class="detalhe-label">Retirada</div>
+            <div class="detalhe-val" id="d-retirada"></div>
+          </div>
+          <div class="col-6">
+            <div class="detalhe-label">Devolução</div>
+            <div class="detalhe-val" id="d-devolucao"></div>
+          </div>
+          <div class="col-6">
+            <div class="detalhe-label">Valor Total</div>
+            <div class="detalhe-val" id="d-valor"></div>
+          </div>
+          <div class="col-6">
+            <div class="detalhe-label">Saldo Restante</div>
+            <div class="detalhe-val" id="d-saldo"></div>
+          </div>
+          <div class="col-12">
+            <div class="detalhe-label">Peças</div>
+            <div class="detalhe-val" id="d-pecas"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function abrirDetalhes(id, cliente, retirada, devolucao, status, valor, saldo, pecas) {
+  document.getElementById('d-cliente').textContent   = cliente;
+  document.getElementById('d-retirada').textContent  = retirada;
+  document.getElementById('d-devolucao').textContent = devolucao;
+  document.getElementById('d-valor').textContent     = 'R$ ' + valor;
+  document.getElementById('d-saldo').textContent     = 'R$ ' + saldo;
+  document.getElementById('d-pecas').textContent     = pecas;
+
+  const statusMap = {
+    'ativo':     'Ativo',
+    'devolvido': 'Devolvido',
+    'atrasado':  'Atrasado',
+    'cancelado': 'Cancelado'
+  };
+  document.getElementById('d-status').textContent = statusMap[status] || status;
+
+  new bootstrap.Modal(document.getElementById('modalDetalhes')).show();
+}
+</script>
+{% endblock %}

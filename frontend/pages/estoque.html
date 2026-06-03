@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Estoque{% endblock %}
+{% block content %}
+
+<style>
+  body, .main { background: #18080f; color: #e0e8f0; }
+  h4.page-titulo { font-size: 1.5rem; font-weight: 700; color: #e0e8f0; margin-bottom: 1rem; }
+
+  .tipo-tabs { display: flex; gap: 8px; margin-bottom: 1.4rem; flex-wrap: wrap; }
+  .tipo-tab {
+    padding: 7px 18px; border-radius: 20px; border: 1px solid #c2185b;
+    background: transparent; color: #f48fb1; font-size: 0.84rem;
+    cursor: pointer; text-decoration: none; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tipo-tab:hover { border-color: #f06292; color: #e0e8f0; }
+  .tipo-tab.ativo { background: #c2185b; color: #e8b84b; border-color: #e8b84b; font-weight: 600; }
+
+  .estoque-box {
+    background: #2e1020; border: 1px solid #c2185b;
+    border-radius: 12px; padding: 1.4rem 1.6rem; margin-bottom: 1.2rem;
+  }
+  .secao-titulo-est {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #e8b84b;
+    display: flex; align-items: center; gap: 7px;
+    border-bottom: 1px solid #c2185b; padding-bottom: 0.6rem; margin-bottom: 1.2rem;
+  }
+  .form-label-top {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #f48fb1; margin-bottom: 5px;
+  }
+  .form-control, .form-select {
+    background: #220d17; border: 1px solid #c2185b;
+    color: #e0e8f0; border-radius: 8px;
+  }
+  .form-control:focus, .form-select:focus {
+    background: #220d17; border-color: #f06292;
+    color: #e0e8f0; box-shadow: 0 0 0 2px rgba(240,98,146,0.2);
+  }
+  .form-control::placeholder { color: #a06070; }
+  .form-select option { background: #220d17; }
+
+  .btn-cadastrar {
+    background: #e8b84b; color: #18080f; border: none;
+    border-radius: 25px; padding: 9px 24px; font-weight: 700; font-size: 0.88rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-cadastrar:hover { background: #d4a43a; }
+
+  /* Upload de foto */
+  .foto-upload-area {
+    border: 2px dashed #c2185b; border-radius: 10px; padding: 1rem;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+    background: #220d17;
+  }
+  .foto-upload-area:hover { border-color: #e8b84b; }
+  .foto-upload-area input[type="file"] { display: none; }
+  .foto-preview { max-width: 100%; max-height: 160px; border-radius: 8px; margin-top: 8px; display: none; }
+
+  /* Cards de vestidos */
+  .grid-vestidos {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px; margin-top: 1rem;
+  }
+  .card-vestido {
+    background: #220d17; border: 1px solid #c2185b; border-radius: 12px;
+    overflow: hidden; transition: border-color 0.15s;
+  }
+  .card-vestido:hover { border-color: #f06292; }
+  .card-vestido-foto {
+    width: 100%; height: 180px; object-fit: cover; background: #2e1020;
+    display: flex; align-items: center; justify-content: center; color: #d81b60;
+    font-size: 2rem;
+  }
+  .card-vestido-foto img { width: 100%; height: 180px; object-fit: cover; }
+  .card-vestido-body { padding: 10px 12px; }
+  .card-vestido-cod { color: #e8b84b; font-size: 0.72rem; font-weight: 700; }
+  .card-vestido-info { color: #e0e8f0; font-size: 0.85rem; margin-top: 2px; }
+  .card-vestido-sub { color: #f48fb1; font-size: 0.75rem; }
+  .card-vestido-acoes { display: flex; gap: 6px; margin-top: 8px; }
+
+  /* Lista acessórios */
+  .lista-header {
+    display: grid; grid-template-columns: 80px 1fr 120px 150px;
+    padding: 8px 12px; border-bottom: 1px solid #c2185b;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #d06080;
+  }
+  .peca-row {
+    display: grid; grid-template-columns: 80px 1fr 120px 150px;
+    padding: 10px 12px; border-bottom: 1px solid #361525;
+    align-items: center; font-size: 0.84rem; transition: background 0.1s;
+  }
+  .peca-row:hover { background: #361525; }
+  .peca-row:last-child { border-bottom: none; }
+  .peca-cod { color: #e8b84b; font-weight: 600; font-size: 0.8rem; }
+
+  .badge-disp { background:#0d3321; color:#4ade80; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:600; }
+  .badge-alug { background:#3d1525; color:#f87171; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:600; }
+  .badge-man  { background:#2d1f00; color:#fbbf24; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:600; }
+  .badge-inat { background:#1a1a2e; color:#6b7280; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:600; }
+
+  .btn-edit { background:transparent; border:1px solid #d81b60; color:#f48fb1; border-radius:6px; padding:3px 10px; font-size:0.72rem; cursor:pointer; text-decoration:none; }
+  .btn-edit:hover { border-color:#f06292; color:#e0e8f0; }
+  .btn-del  { background:transparent; border:1px solid #3d1525; color:#f87171; border-radius:6px; padding:3px 10px; font-size:0.72rem; cursor:pointer; }
+  .btn-del:hover { background:#3d1525; }
+
+  .contadores { display:flex; gap:12px; margin-bottom:1rem; flex-wrap:wrap; }
+  .contador-chip { background:#2e1020; border:1px solid #c2185b; border-radius:8px; padding:6px 14px; font-size:0.78rem; color:#f48fb1; }
+  .contador-chip span { color:#e8b84b; font-weight:700; }
+  .vazio { text-align:center; padding:2rem; color:#a06070; font-size:0.88rem; }
+</style>
+
+<h4 class="page-titulo">Estoque</h4>
+
+<div class="tipo-tabs">
+  <a href="?tipo=Vestido"   class="tipo-tab {% if filtro_tipo == 'Vestido'   %}ativo{% endif %}">👗 Vestidos</a>
+  <a href="?tipo=Acessorio" class="tipo-tab {% if filtro_tipo == 'Acessorio' %}ativo{% endif %}">💎 Acessórios</a>
+</div>
+
+<div class="contadores">
+  <div class="contador-chip">Total: <span>{{ total }}</span></div>
+  <div class="contador-chip">Disponíveis: <span>{{ disponiveis }}</span></div>
+  <div class="contador-chip">Alugadas: <span>{{ alugadas }}</span></div>
+</div>
+
+<div class="estoque-box">
+  <div class="secao-titulo-est">
+    {% if filtro_tipo == 'Vestido' %}👗 CADASTRAR VESTIDO{% else %}💎 CADASTRAR ACESSÓRIO{% endif %}
+  </div>
+
+  <!-- Formulário de cadastro -->
+  <form method="POST" action="{{ url_for('estoque.cadastrar_rapido') }}" enctype="multipart/form-data">
+    <input type="hidden" name="tipo" value="{{ filtro_tipo }}">
+
+    {% if filtro_tipo == 'Vestido' %}
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label-top">Cor</label>
+        <input type="text" name="cor" class="form-control" placeholder="Ex: Vermelho, Branco..." autocomplete="off">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-top">Modelo</label>
+        <input type="text" name="modelo" class="form-control" placeholder="Ex: Sereia, Princesa, Tubinho..." autocomplete="off">
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="form-label-top">Foto do Vestido</label>
+      <div class="foto-upload-area" onclick="document.getElementById('foto-input').click()">
+        <i class="bi bi-camera" style="font-size:1.4rem;color:#f06292;"></i>
+        <div style="color:#f48fb1;font-size:0.82rem;margin-top:6px;">Clique para adicionar uma foto</div>
+        <img id="foto-preview" class="foto-preview" src="" alt="preview">
+        <input type="file" id="foto-input" name="foto" accept="image/*" onchange="mostrarPreview(this)">
+      </div>
+    </div>
+    {% else %}
+    <div class="mb-4">
+      <label class="form-label-top">Nome / Descrição</label>
+      <input type="text" name="descricao" class="form-control"
+             placeholder="Ex: Tiara dourada, Colar perolado, Luvas brancas..." autocomplete="off">
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn-cadastrar">+ Cadastrar</button>
+  </form>
+
+  <!-- Lista de peças -->
+  {% if pecas %}
+  <div class="mt-4">
+    {% if filtro_tipo == 'Vestido' %}
+    <!-- Grid de cards para vestidos -->
+    <div class="grid-vestidos">
+      {% for p in pecas %}
+      <div class="card-vestido">
+        <div class="card-vestido-foto">
+          {% if p.foto_path %}
+          <img src="{{ url_for('static', filename=p.foto_path) }}" alt="{{ p.codigo }}">
+          {% else %}
+          👗
+          {% endif %}
+        </div>
+        <div class="card-vestido-body">
+          <div class="card-vestido-cod">{{ p.codigo }}</div>
+          <div class="card-vestido-info">{{ p.cor or '—' }}</div>
+          <div class="card-vestido-sub">{{ p.modelo or '—' }}</div>
+          <div class="mt-1">
+            {% if p.status == 'disponivel' %}<span class="badge-disp">Disponível</span>
+            {% elif p.status == 'alugada' %}<span class="badge-alug">Alugada</span>
+            {% elif p.status == 'manutencao' %}<span class="badge-man">Manutenção</span>
+            {% else %}<span class="badge-inat">Inativa</span>{% endif %}
+          </div>
+          <div class="card-vestido-acoes">
+            <a href="{{ url_for('estoque.editar', id=p.id) }}" class="btn-edit">Editar</a>
+            <form method="POST" action="{{ url_for('estoque.excluir', id=p.id) }}"
+                  onsubmit="return confirm('Excluir vestido {{ p.codigo }}?')">
+              <button type="submit" class="btn-del">Excluir</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Lista para acessórios -->
+    <div class="lista-pecas">
+      <div class="lista-header">
+        <span>Código</span><span>Descrição</span><span>Status</span><span>Ações</span>
+      </div>
+      {% for p in pecas %}
+      <div class="peca-row">
+        <div class="peca-cod">{{ p.codigo }}</div>
+        <div style="color:#e0e8f0;">{{ p.descricao or '—' }}</div>
+        <div>
+          {% if p.status == 'disponivel' %}<span class="badge-disp">Disponível</span>
+          {% elif p.status == 'alugada' %}<span class="badge-alug">Alugada</span>
+          {% elif p.status == 'manutencao' %}<span class="badge-man">Manutenção</span>
+          {% else %}<span class="badge-inat">Inativa</span>{% endif %}
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('estoque.editar', id=p.id) }}" class="btn-edit">Editar</a>
+          <form method="POST" action="{{ url_for('estoque.excluir', id=p.id) }}"
+                onsubmit="return confirm('Excluir acessório {{ p.codigo }}?')">
+            <button type="submit" class="btn-del">Excluir</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="vazio mt-3">Nenhum item cadastrado ainda.</div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function mostrarPreview(input) {
+  const preview = document.getElementById('foto-preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

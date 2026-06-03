@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% block title %}Novo Contrato{% endblock %}
+{% block content %}
+
+<style>
+  body, .main { background: #18080f; color: #e0e8f0; }
+  .secao {
+    background: #2e1020; border: 1px solid #c2185b;
+    border-radius: 12px; padding: 1.4rem 1.6rem; margin-bottom: 1.2rem;
+  }
+  .secao-titulo {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #e8b84b;
+    margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid #c2185b; padding-bottom: 0.6rem;
+  }
+  .form-label-top {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #f48fb1; margin-bottom: 5px;
+  }
+  .form-control, .form-select {
+    background: #220d17; border: 1px solid #c2185b; color: #e0e8f0; border-radius: 8px;
+  }
+  .form-control:focus, .form-select:focus {
+    background: #220d17; border-color: #f06292; color: #e0e8f0;
+    box-shadow: 0 0 0 2px rgba(240,98,146,0.2);
+  }
+  .form-control::placeholder { color: #a06070; }
+  .form-select option { background: #220d17; }
+
+  /* Busca de peças */
+  .tipo-label {
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #f48fb1; margin: 14px 0 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .peca-busca-wrap { position: relative; margin-bottom: 6px; }
+  .peca-busca-input {
+    background: #220d17; border: 1px solid #c2185b; color: #e0e8f0;
+    border-radius: 8px; padding: 8px 12px; font-size: 0.84rem; width: 100%;
+    transition: border-color 0.15s;
+  }
+  .peca-busca-input:focus { outline: none; border-color: #f06292; }
+  .peca-busca-input::placeholder { color: #a06070; }
+
+  .peca-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+    background: #2e1020; border: 1px solid #f06292; border-top: none;
+    border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto; display: none;
+  }
+  .peca-opcao {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #361525;
+    transition: background 0.1s;
+  }
+  .peca-opcao:last-child { border-bottom: none; }
+  .peca-opcao:hover { background: #44102c; }
+  .peca-opcao.ocupada { opacity: 0.45; cursor: not-allowed; }
+  .badge-livre { background:#0d3321; color:#4ade80; font-size:0.65rem; padding:2px 9px; border-radius:20px; white-space:nowrap; }
+  .badge-ocup  { background:#3d1525; color:#f87171; font-size:0.65rem; padding:2px 9px; border-radius:20px; white-space:nowrap; }
+
+  .pecas-selecionadas {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 32px;
+  }
+  .peca-tag {
+    background: #421020; border: 1px solid #f06292; border-radius: 20px;
+    padding: 4px 10px 4px 12px; font-size: 0.78rem; color: #e0e8f0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .peca-tag button {
+    background: none; border: none; color: #f87171; font-size: 0.9rem;
+    cursor: pointer; padding: 0; line-height: 1;
+  }
+  .peca-tag button:hover { color: #fff; }
+
+  .saldo-box {
+    background: #220d17; border: 1px solid #c2185b; border-radius: 8px;
+    padding: 12px 16px; display: flex; align-items: center; gap: 8px;
+    color: #e8b84b; font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;
+  }
+
+  .btn-salvar-pdf {
+    background: #e8b84b; color: #18080f; border: none;
+    border-radius: 25px; padding: 10px 26px; font-weight: 700; font-size: 0.9rem;
+  }
+  .btn-salvar-pdf:hover { background: #d4a43a; color: #18080f; }
+  .btn-salvar {
+    background: #c2185b; color: #fff; border: 1px solid #e91e8c;
+    border-radius: 25px; padding: 10px 26px; font-weight: 700; font-size: 0.9rem;
+  }
+  .btn-salvar:hover { background: #d81b60; color: #fff; }
+
+  .aviso-data {
+    background: #220d17; border: 1px solid #c2185b; border-radius: 8px;
+    padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+    color: #f48fb1; font-size: 0.83rem; margin-bottom: 10px;
+  }
+</style>
+
+<h4 class="fw-bold mb-1" style="color:#e0e8f0; font-size:1.4rem;">Novo Contrato de Aluguel</h4>
+<p style="color:#f48fb1; font-size:0.85rem; margin-bottom:1.4rem;">Preencha os dados abaixo.</p>
+
+<form method="POST" id="form-contrato">
+
+<!-- 1. PERÍODO -->
+<div class="secao">
+  <div class="secao-titulo"><i class="bi bi-calendar3"></i> 1. Período do Aluguel</div>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label-top">Data de Saída</label>
+      <input type="date" name="data_retirada" id="data_retirada"
+             class="form-control" required min="{{ hoje }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label-top">Data de Devolução</label>
+      <input type="date" name="data_devolucao" id="data_devolucao"
+             class="form-control" required min="{{ hoje }}">
+    </div>
+  </div>
+</div>
+
+<!-- 2. PEÇAS -->
+<div class="secao">
+  <div class="secao-titulo"><i class="bi bi-box-seam"></i> 2. Peças do Aluguel</div>
+
+  <div class="aviso-data" id="aviso-data">
+    <i class="bi bi-lightbulb" style="color:#e8b84b;"></i>
+    Preencha as datas de saída e devolução para verificar disponibilidade das peças.
+  </div>
+
+  <div class="aviso-data" id="aviso-estoque" style="display:none; border-color:#3d1525;">
+    <i class="bi bi-exclamation-triangle" style="color:#f87171;"></i>
+    <span style="color:#f87171;">Nenhuma peça cadastrada no estoque ainda. Vá em <b>Estoque</b> e cadastre os itens antes de criar um contrato.</span>
+  </div>
+
+  <div id="area-pecas" style="display:none;">
+    {% for tipo, icone, label in [
+      ('Vestido','👗','Vestido'),('Acessorio','💎','Acessório')
+    ] %}
+    <div class="tipo-label">{{ icone }} {{ label }}</div>
+    <div class="peca-busca-wrap">
+      <input type="text" class="peca-busca-input"
+             placeholder="Digite o código ou descrição do {{ label }}..."
+             oninput="buscarPeca('{{ tipo }}', this)"
+             onfocus="mostrarDropdown('{{ tipo }}')"
+             autocomplete="off">
+      <div class="peca-dropdown" id="drop-{{ tipo }}"></div>
+    </div>
+    <div class="pecas-selecionadas" id="sel-{{ tipo }}"></div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 3. DADOS DO CLIENTE -->
+<div class="secao">
+  <div class="secao-titulo"><i class="bi bi-person"></i> 3. Dados do Cliente</div>
+  <div class="mb-3">
+    <label class="form-label-top">Nome Completo</label>
+    <input type="text" name="cliente_nome" class="form-control"
+           placeholder="Nome completo da cliente">
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <label class="form-label-top">CPF</label>
+      <input type="text" name="cliente_cpf" class="form-control" placeholder="000.000.000-00">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label-top">Telefone / WhatsApp</label>
+      <input type="text" name="cliente_telefone" class="form-control" placeholder="(85) 99999-0000">
+    </div>
+  </div>
+  <div>
+    <label class="form-label-top">Endereço</label>
+    <textarea name="cliente_endereco" class="form-control" rows="2"
+              placeholder="Rua, número, bairro, cidade..."></textarea>
+  </div>
+</div>
+
+<!-- 4. MEDIDAS DO VESTIDO -->
+<div class="secao">
+  <div class="secao-titulo"><i class="bi bi-rulers"></i> 4. Medidas do Vestido</div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <label class="form-label-top">Cor</label>
+      <input type="text" name="medida_cor" class="form-control" placeholder="Ex: Vermelho, Branco...">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label-top">Modelo</label>
+      <input type="text" name="medida_modelo" class="form-control" placeholder="Ex: Sereia, Princesa...">
+    </div>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <label class="form-label-top">Busto (cm)</label>
+      <input type="number" name="medida_busto" class="form-control" placeholder="Ex: 90">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label-top">Cintura (cm)</label>
+      <input type="number" name="medida_cintura" class="form-control" placeholder="Ex: 70">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label-top">Barra (cm)</label>
+      <input type="number" name="medida_barra" class="form-control" placeholder="Ex: 100">
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label-top">Alça (cm)</label>
+    <input type="number" name="medida_alca" class="form-control" placeholder="Ex: 25">
+  </div>
+  <div>
+    <label class="form-label-top">Observações de Medidas</label>
+    <textarea name="medida_obs" class="form-control" rows="2"
+              placeholder="Ajustes, observações da costureira..."></textarea>
+  </div>
+</div>
+
+<!-- 5. VALORES E PAGAMENTO -->
+<div class="secao">
+  <div class="secao-titulo"><i class="bi bi-cash-coin"></i> 5. Valores e Pagamento</div>
+  <div class="mb-3">
+    <label class="form-label-top">Forma de Pagamento</label>
+    <select name="forma_pagamento" class="form-select">
+      <option value="">— Selecione —</option>
+      <option value="pix">PIX</option>
+      <option value="cartao_credito">Cartão de Crédito</option>
+      <option value="cartao_debito">Cartão de Débito</option>
+      <option value="dinheiro">Dinheiro</option>
+    </select>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <label class="form-label-top">Valor Total (R$)</label>
+      <input type="number" name="valor_total_manual" id="valor_total_manual"
+             class="form-control" step="0.01" min="0" placeholder="0,00"
+             oninput="atualizarSaldo()">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label-top">Sinal Pago (R$)</label>
+      <input type="number" name="valor_sinal" id="valor_sinal"
+             class="form-control" step="0.01" min="0" placeholder="0,00"
+             oninput="atualizarSaldo()">
+    </div>
+  </div>
+  <div class="saldo-box">
+    <i class="bi bi-credit-card-2-front"></i>
+    <span id="txt-saldo">Saldo na devolução: R$ 0,00</span>
+  </div>
+  <div>
+    <label class="form-label-top">Observações / Tipo de Evento</label>
+    <textarea name="observacoes" class="form-control" rows="3"
+              placeholder="Ex: Casamento, debutante, aniversário, observações gerais..."></textarea>
+  </div>
+</div>
+
+<!-- BOTÕES -->
+<div class="d-flex gap-3 mb-4 flex-wrap">
+  <button type="submit" name="acao" value="salvar_pdf" class="btn btn-salvar-pdf">
+    ✓ Salvar e Gerar Contrato PDF
+  </button>
+  <button type="submit" name="acao" value="salvar" class="btn btn-salvar">
+    + Cadastrar Novo Contrato
+  </button>
+</div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let pecasDisponiveis = [];
+let pecasSelecionadas = {};
+
+function atualizarSaldo() {
+  const total = parseFloat(document.getElementById('valor_total_manual').value || 0);
+  const sinal = parseFloat(document.getElementById('valor_sinal').value || 0);
+  const saldo = Math.max(0, total - sinal);
+  document.getElementById('txt-saldo').textContent =
+    'Saldo na devolução: R$ ' + saldo.toFixed(2).replace('.', ',');
+}
+
+function carregarPecas() {
+  const ini = document.getElementById('data_retirada').value;
+  const fim = document.getElementById('data_devolucao').value;
+  if (!ini || !fim) return;
+
+  document.getElementById('aviso-data').style.display = 'none';
+  document.getElementById('area-pecas').style.display = '';
+
+  fetch(`/estoque/disponibilidade?inicio=${ini}&fim=${fim}`)
+    .then(r => r.json())
+    .then(pecas => {
+      pecasDisponiveis = pecas;
+      if (!pecas.length) {
+        document.getElementById('aviso-estoque').style.display = 'flex';
+      } else {
+        document.getElementById('aviso-estoque').style.display = 'none';
+      }
+    })
+    .catch(() => {
+      document.getElementById('aviso-estoque').style.display = 'flex';
+    });
+}
+
+function buscarPeca(tipo, input) {
+  const texto = input.value.trim().toLowerCase();
+  const drop = document.getElementById('drop-' + tipo);
+
+  if (!pecasDisponiveis.length) {
+    drop.innerHTML = '<div class="peca-opcao" style="color:#f48fb1;">Selecione as datas primeiro.</div>';
+    drop.style.display = 'block';
+    return;
+  }
+
+  const jaSelIds = (pecasSelecionadas[tipo] || []).map(p => p.id);
+  const filtradas = pecasDisponiveis.filter(p =>
+    p.tipo === tipo &&
+    !jaSelIds.includes(p.id) &&
+    (texto === '' || (p.codigo + ' ' + p.cor + ' ' + p.modelo + ' ' + p.descricao)
+      .toLowerCase().includes(texto))
+  );
+
+  if (!filtradas.length) {
+    drop.innerHTML = '<div class="peca-opcao" style="color:#f48fb1; font-size:0.82rem;">Nenhum item encontrado.</div>';
+    drop.style.display = 'block';
+    return;
+  }
+
+  drop.innerHTML = filtradas.map(p => {
+    let desc = '';
+    if (p.tipo === 'Vestido') {
+      desc = [p.cor, p.modelo].filter(Boolean).join(' - ');
+    } else {
+      desc = p.descricao || '';
+    }
+    const badge = p.livre
+      ? `<span class="badge-livre">Livre</span>`
+      : `<span class="badge-ocup">Ocupada</span>`;
+    return `<div class="peca-opcao ${!p.livre ? 'ocupada' : ''}"
+                 onclick="${p.livre ? `selecionarPeca('${tipo}', ${p.id}, '${p.codigo}', '${desc.replace(/'/g,"\\'")}')` : ''}">
+      <span>
+        <span style="color:#e8b84b;font-weight:600;font-size:0.84rem;">${p.codigo}</span>
+        <span style="color:#f48fb1;font-size:0.8rem;margin-left:8px;">${desc}</span>
+      </span>
+      ${badge}
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function mostrarDropdown(tipo) {
+  const input = document.querySelector(`#drop-${tipo}`).previousElementSibling;
+  buscarPeca(tipo, input);
+}
+
+function selecionarPeca(tipo, id, codigo, desc) {
+  if (!pecasSelecionadas[tipo]) pecasSelecionadas[tipo] = [];
+  if (pecasSelecionadas[tipo].find(p => p.id === id)) return;
+  pecasSelecionadas[tipo].push({id, codigo, desc});
+  renderizarSelecionadas(tipo);
+  const drop = document.getElementById('drop-' + tipo);
+  drop.previousElementSibling.value = '';
+  drop.style.display = 'none';
+}
+
+function removerPeca(tipo, id) {
+  pecasSelecionadas[tipo] = (pecasSelecionadas[tipo] || []).filter(p => p.id !== id);
+  renderizarSelecionadas(tipo);
+}
+
+function renderizarSelecionadas(tipo) {
+  const container = document.getElementById('sel-' + tipo);
+  const selecionadas = pecasSelecionadas[tipo] || [];
+  container.innerHTML = selecionadas.map(p => `
+    <div class="peca-tag">
+      <input type="hidden" name="pecas_ids" value="${p.id}">
+      <span><b>${p.codigo}</b> ${p.desc ? '· ' + p.desc : ''}</span>
+      <button type="button" onclick="removerPeca('${tipo}', ${p.id})" title="Remover">×</button>
+    </div>
+  `).join('');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('peca-busca-input')) {
+    document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
+  }
+});
+
+document.getElementById('data_retirada').addEventListener('change', carregarPecas);
+document.getElementById('data_devolucao').addEventListener('change', carregarPecas);
+</script>
+{% endblock %}

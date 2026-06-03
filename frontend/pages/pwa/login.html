@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nobre">
+  <meta name="theme-color" content="#c2185b">
+  <link rel="manifest" href="/assets/pwa/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/pwa/icon-192.png">
+  <title>Nobre Vestidos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      background: #18080f;
+      min-height: 100dvh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #2e1020;
+      border: 1px solid #c2185b;
+      border-radius: 20px;
+      padding: 2.5rem 1.8rem;
+      width: 100%; max-width: 380px;
+    }
+    .marca { text-align: center; margin-bottom: 2.2rem; }
+    .marca h1 {
+      font-size: 1.8rem; font-weight: 900;
+      color: #e0e8f0; letter-spacing: 0.04em;
+    }
+    .marca h1 .d { color: #e8b84b; }
+    .marca p { color: #f48fb1; font-size: 0.78rem; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .linha { width: 36px; height: 2px; background: #e8b84b; margin: 10px auto 0; border-radius: 2px; }
+
+    label {
+      display: block; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: #f48fb1; margin-bottom: 6px;
+    }
+    input {
+      width: 100%; background: #220d17; border: 1px solid #c2185b;
+      color: #e0e8f0; border-radius: 10px;
+      padding: 14px 16px; font-size: 1rem; margin-bottom: 1.2rem;
+      -webkit-appearance: none;
+    }
+    input:focus { outline: none; border-color: #e8b84b; }
+    input::placeholder { color: #2a4060; }
+
+    button {
+      width: 100%; background: #e8b84b; color: #18080f;
+      border: none; border-radius: 12px;
+      padding: 15px; font-size: 1rem; font-weight: 800;
+      cursor: pointer; margin-top: 0.4rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active { background: #d4a43a; }
+
+    .erro {
+      background: #2d1111; border: 1px solid #5a2020;
+      color: #f87171; border-radius: 10px;
+      padding: 10px 14px; font-size: 0.85rem;
+      margin-bottom: 1rem; text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="marca">
+    <h1>NOBRE VESTIDOS</h1>
+    <p>Nobre Vestidos</p>
+    <div class="linha"></div>
+  </div>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="erro">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST">
+    <label>Login</label>
+    <input type="text" name="email" placeholder="Isaac"
+           autocomplete="username" autocapitalize="none" required>
+    <label>Senha</label>
+    <input type="password" name="senha" placeholder="••••••••"
+           autocomplete="current-password" required>
+    <button type="submit">Entrar</button>
+  </form>
+</div>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/assets/pwa/sw.js');
+  }
+</script>
+</body>
+</html>

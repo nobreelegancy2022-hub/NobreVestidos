@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Contrato #{{ "%04d"|format(contrato.id) }}{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <h4><i class="bi bi-file-earmark-text me-2"></i>Contrato #{{ "%04d"|format(contrato.id) }}</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('contratos.pdf', id=contrato.id) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-file-pdf me-1"></i> Ver PDF
+    </a>
+    <a href="{{ url_for('contratos.lista') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header py-3">Cliente</div>
+      <div class="card-body">
+        <p class="fw-semibold mb-1">{{ contrato.cliente.nome }}</p>
+        <p class="text-muted small mb-1"><i class="bi bi-phone me-1"></i>{{ contrato.cliente.telefone or '—' }}</p>
+        <p class="text-muted small mb-0"><i class="bi bi-envelope me-1"></i>{{ contrato.cliente.email or '—' }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header py-3">Datas e Status</div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Retirada</dt>
+          <dd class="col-7">{{ contrato.data_retirada.strftime('%d/%m/%Y') }}</dd>
+          <dt class="col-5 text-muted">Devolução prevista</dt>
+          <dd class="col-7">{{ contrato.data_devolucao.strftime('%d/%m/%Y') }}</dd>
+          {% if contrato.data_devolucao_real %}
+          <dt class="col-5 text-muted">Devolvido em</dt>
+          <dd class="col-7">{{ contrato.data_devolucao_real.strftime('%d/%m/%Y') }}</dd>
+          {% endif %}
+          <dt class="col-5 text-muted">Status</dt>
+          <dd class="col-7"><span class="badge badge-{{ contrato.status }}">{{ contrato.status.capitalize() }}</span></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Peças -->
+<div class="card mb-3">
+  <div class="card-header py-3">Peças Alugadas</div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Código</th><th>Tipo</th><th>Tamanho</th><th>Cor</th><th class="text-end">Valor</th></tr></thead>
+      <tbody>
+      {% for item in contrato.itens %}
+      <tr>
+        <td>{{ item.peca.codigo }}</td>
+        <td>{{ item.peca.tipo }}</td>
+        <td>{{ item.peca.tamanho or '—' }}</td>
+        <td>{{ item.peca.cor or '—' }}</td>
+        <td class="text-end">R$ {{ "%.2f"|format(item.preco_cobrado) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot class="table-light">
+        <tr><td colspan="4" class="fw-semibold">Total</td><td class="text-end fw-semibold">R$ {{ "%.2f"|format(contrato.valor_total) }}</td></tr>
+        <tr><td colspan="4" class="text-muted small">Pago</td><td class="text-end text-success">R$ {{ "%.2f"|format(contrato.valor_pago) }}</td></tr>
+        <tr><td colspan="4" class="text-muted small">Saldo</td>
+          <td class="text-end fw-semibold {% if contrato.saldo_restante > 0 %}text-danger{% else %}text-success{% endif %}">
+            R$ {{ "%.2f"|format(contrato.saldo_restante) }}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- Pagamentos -->
+<div class="card mb-3">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    Pagamentos
+    {% if contrato.status in ['ativo','atrasado'] %}
+    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#form-pg">
+      <i class="bi bi-plus-lg me-1"></i> Registrar
+    </button>
+    {% endif %}
+  </div>
+  <div class="collapse" id="form-pg">
+    <div class="card-body border-bottom">
+      <form method="POST" action="{{ url_for('contratos.pagar', id=contrato.id) }}" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label class="form-label small">Valor (R$)</label>
+          <input type="number" name="valor" class="form-control form-control-sm" step="0.01" min="0.01" required style="width:110px">
+        </div>
+        <div class="col-auto">
+          <label class="form-label small">Tipo</label>
+          <select name="tipo" class="form-select form-select-sm">
+            <option value="complemento">Complemento</option>
+            <option value="total">Total</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <label class="form-label small">Forma</label>
+          <select name="forma" class="form-select form-select-sm">
+            <option value="dinheiro">Dinheiro</option>
+            <option value="pix">PIX</option>
+            <option value="cartao">Cartão</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    {% if contrato.pagamentos %}
+    <table class="table mb-0 small">
+      <thead><tr><th>Data</th><th>Tipo</th><th>Forma</th><th class="text-end">Valor</th></tr></thead>
+      <tbody>
+      {% for pg in contrato.pagamentos %}
+      <tr>
+        <td>{{ pg.data.strftime('%d/%m/%Y') }}</td>
+        <td>{{ pg.tipo.capitalize() }}</td>
+        <td>{{ pg.forma.capitalize() }}</td>
+        <td class="text-end">R$ {{ "%.2f"|format(pg.valor) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-muted py-3 mb-0 small">Nenhum pagamento registrado.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Ações -->
+{% if contrato.status in ['ativo','atrasado'] %}
+<div class="row g-2">
+  <div class="col-md-6">
+    <div class="card border-success">
+      <div class="card-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <p class="fw-semibold mb-0 small">Registrar Devolução</p>
+          <p class="text-muted mb-0" style="font-size:0.78rem;">Libera as peças no estoque.</p>
+        </div>
+        <form method="POST" action="{{ url_for('contratos.devolver', id=contrato.id) }}"
+              onsubmit="return confirm('Confirmar devolução?')">
+          <button class="btn btn-success btn-sm"><i class="bi bi-arrow-return-left me-1"></i> Devolver</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-danger">
+      <div class="card-body d-flex justify-content-between align-items-center py-3">
+        <div>
+          <p class="fw-semibold mb-0 small">Cancelar Contrato</p>
+          <p class="text-muted mb-0" style="font-size:0.78rem;">Remove e libera as peças.</p>
+        </div>
+        <form method="POST" action="{{ url_for('contratos.cancelar', id=contrato.id) }}"
+              onsubmit="return confirm('Cancelar este contrato?')">
+          <button class="btn btn-danger btn-sm"><i class="bi bi-x-lg me-1"></i> Cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

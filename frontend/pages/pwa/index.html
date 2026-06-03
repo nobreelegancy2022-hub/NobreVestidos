@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nobre">
+  <meta name="theme-color" content="#c2185b">
+  <link rel="manifest" href="/assets/pwa/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/pwa/icon-192.png">
+  <title>Novo Contrato — Nobre</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --azul: #c2185b;
+      --fundo: #18080f;
+      --card: #2e1020;
+      --borda: #c2185b;
+      --texto: #e0e8f0;
+      --sub: #f48fb1;
+      --dourado: #e8b84b;
+      --verde: #4ade80;
+      --vermelho: #f87171;
+    }
+    body {
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      background: var(--fundo); color: var(--texto);
+      min-height: 100dvh;
+      padding-bottom: 6rem; /* espaço para o botão fixo */
+    }
+
+    /* Header */
+    .header {
+      background: var(--rosa);
+      padding: 1rem 1.2rem;
+      padding-top: max(1rem, env(safe-area-inset-top));
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .header-marca { font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
+    .header-marca .d { color: var(--dourado); }
+    .header-sub { font-size: 0.72rem; color: #7aabcc; }
+    .btn-sair {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      color: #7aabcc; border-radius: 8px; padding: 6px 12px;
+      font-size: 0.75rem; cursor: pointer; text-decoration: none;
+    }
+
+    /* Seções */
+    .secao {
+      background: var(--card); border-bottom: 1px solid var(--borda);
+      padding: 1rem 1.2rem;
+    }
+    .secao + .secao { margin-top: 8px; }
+    .secao-titulo {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dourado);
+      margin-bottom: 0.9rem; display: flex; align-items: center; gap: 6px;
+    }
+    .secao-titulo::after {
+      content: ''; flex: 1; height: 1px; background: var(--borda);
+    }
+
+    label {
+      display: block; font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--sub); margin-bottom: 5px;
+    }
+    input, select, textarea {
+      width: 100%; background: #220d17; border: 1px solid var(--borda);
+      color: var(--texto); border-radius: 10px;
+      padding: 12px 14px; font-size: 0.95rem;
+      margin-bottom: 0.9rem; -webkit-appearance: none;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--dourado);
+    }
+    input::placeholder, textarea::placeholder { color: #2a4060; }
+    select option { background: #220d17; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Busca de peças */
+    .tipo-tabs {
+      display: flex; gap: 6px; overflow-x: auto;
+      padding-bottom: 4px; margin-bottom: 0.9rem;
+      scrollbar-width: none;
+    }
+    .tipo-tabs::-webkit-scrollbar { display: none; }
+    .tipo-tab {
+      flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+      border: 1px solid var(--borda); background: transparent;
+      color: var(--sub); font-size: 0.8rem; cursor: pointer;
+      white-space: nowrap; transition: all 0.15s;
+    }
+    .tipo-tab.ativo { background: var(--borda); color: var(--dourado); border-color: var(--dourado); }
+
+    .busca-peca {
+      position: relative; margin-bottom: 8px;
+    }
+    .busca-peca input { margin-bottom: 0; padding-left: 36px; }
+    .busca-peca .ico {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--sub); font-size: 0.9rem; pointer-events: none;
+    }
+
+    .peca-dropdown {
+      background: #2e1020; border: 1px solid var(--dourado);
+      border-radius: 10px; overflow: hidden;
+      max-height: 200px; overflow-y: auto;
+      display: none; margin-top: 4px;
+    }
+    .peca-opcao {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-bottom: 1px solid var(--borda);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .peca-opcao:last-child { border-bottom: none; }
+    .peca-opcao:active { background: #44102c; }
+    .peca-opcao.ocupada { opacity: 0.4; cursor: not-allowed; }
+    .peca-cod { font-weight: 700; color: var(--dourado); font-size: 0.85rem; }
+    .peca-desc { font-size: 0.78rem; color: var(--sub); margin-top: 1px; }
+    .badge-livre { background: #0d3321; color: var(--verde); border-radius: 20px; padding: 2px 9px; font-size: 0.68rem; font-weight: 600; flex-shrink: 0; }
+    .badge-ocup  { background: #3d1525; color: var(--vermelho); border-radius: 20px; padding: 2px 9px; font-size: 0.68rem; font-weight: 600; flex-shrink: 0; }
+
+    /* Tags de peças selecionadas */
+    .pecas-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 10px; }
+    .peca-tag {
+      background: #421020; border: 1px solid #f06292;
+      border-radius: 20px; padding: 5px 10px 5px 12px;
+      font-size: 0.78rem; display: flex; align-items: center; gap: 6px;
+    }
+    .peca-tag button {
+      background: none; border: none; color: var(--vermelho);
+      font-size: 1rem; cursor: pointer; padding: 0; line-height: 1;
+    }
+
+    /* Aviso sem datas */
+    .aviso {
+      background: #220d17; border: 1px solid var(--borda);
+      border-radius: 10px; padding: 12px 14px;
+      font-size: 0.82rem; color: var(--sub);
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .aviso .ico { color: var(--dourado); flex-shrink: 0; }
+
+    /* Saldo */
+    .saldo-box {
+      background: #220d17; border: 1px solid var(--borda);
+      border-radius: 10px; padding: 12px 14px;
+      color: var(--dourado); font-weight: 700; font-size: 0.92rem;
+      margin-top: -0.4rem; margin-bottom: 0.9rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Formas de pagamento */
+    .formas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0.9rem; }
+    .forma-btn {
+      padding: 10px; border-radius: 10px; border: 1px solid var(--borda);
+      background: #220d17; color: var(--sub); font-size: 0.82rem;
+      cursor: pointer; text-align: center; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .forma-btn.ativo { border-color: var(--dourado); color: var(--dourado); background: #1a1500; }
+
+    /* Botão fixo de salvar */
+    .footer-btn {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 1rem 1.2rem;
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      background: var(--fundo); border-top: 1px solid var(--borda);
+      z-index: 50;
+    }
+    .btn-salvar {
+      width: 100%; background: var(--dourado); color: #18080f;
+      border: none; border-radius: 14px; padding: 16px;
+      font-size: 1rem; font-weight: 800; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+    }
+    .btn-salvar:active { background: #d4a43a; }
+    .btn-salvar:disabled { background: #3a3a2a; color: #666; cursor: not-allowed; }
+
+    /* Modal de sucesso */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 100; display: none;
+      align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    .overlay.visivel { display: flex; }
+    .modal-sucesso {
+      background: var(--card); border: 1px solid var(--borda);
+      border-radius: 20px; padding: 2rem 1.6rem; width: 100%; max-width: 340px;
+      text-align: center;
+    }
+    .modal-sucesso .icone { font-size: 3rem; margin-bottom: 1rem; }
+    .modal-sucesso h2 { font-size: 1.2rem; color: var(--texto); margin-bottom: 0.5rem; }
+    .modal-sucesso p { font-size: 0.85rem; color: var(--sub); margin-bottom: 1.5rem; }
+    .modal-btns { display: flex; flex-direction: column; gap: 10px; }
+    .btn-pdf {
+      background: var(--dourado); color: #18080f;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 0.95rem; font-weight: 800; cursor: pointer; text-decoration: none;
+      display: block;
+    }
+    .btn-novo {
+      background: transparent; border: 1px solid var(--borda);
+      color: var(--sub); border-radius: 12px; padding: 14px;
+      font-size: 0.95rem; cursor: pointer;
+    }
+    .btn-novo:active { background: #361525; }
+
+    /* Loading */
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #18080f; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .erro-msg { color: var(--vermelho); font-size: 0.82rem; text-align: center; margin-top: 6px; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="header-marca">NOBRE VESTIDOS</div>
+    <div class="header-sub">Novo Contrato</div>
+  </div>
+  <a href="/app/login" class="btn-sair">Sair</a>
+</div>
+
+<form id="form-contrato">
+
+<!-- 1. Período -->
+<div class="secao" style="margin-top:8px;">
+  <div class="secao-titulo">📅 Período do Aluguel</div>
+  <div class="row2">
+    <div>
+      <label>Data de Saída</label>
+      <input type="date" name="data_retirada" id="data_retirada"
+             min="{{ hoje }}" required>
+    </div>
+    <div>
+      <label>Devolução</label>
+      <input type="date" name="data_devolucao" id="data_devolucao"
+             min="{{ hoje }}" required>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Peças -->
+<div class="secao">
+  <div class="secao-titulo">👔 Peças do Aluguel</div>
+
+  <div class="aviso" id="aviso-data">
+    <span class="ico">💡</span>
+    Preencha as datas para buscar as peças disponíveis.
+  </div>
+
+  <div id="area-pecas" style="display:none;">
+    <!-- Abas de tipo -->
+    <div class="tipo-tabs">
+      {% for tipo, icone in [('Blazer','🧥'),('Calca','👖'),('Camisa','👔'),('Colete','🦺'),('Sapato','👟')] %}
+      <button type="button" class="tipo-tab {% if tipo == 'Blazer' %}ativo{% endif %}"
+              onclick="trocarTipo('{{ tipo }}', this)">
+        {{ icone }} {{ 'Calça' if tipo == 'Calca' else tipo }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Campo de busca -->
+    <div class="busca-peca">
+      <span class="ico">🔍</span>
+      <input type="text" id="busca-input" placeholder="Digite código, cor ou modelo..."
+             oninput="buscarPeca(this.value)" autocomplete="off" autocorrect="off">
+    </div>
+    <div class="peca-dropdown" id="dropdown-pecas"></div>
+
+    <!-- Tags das peças selecionadas -->
+    <div class="pecas-tags" id="pecas-tags"></div>
+  </div>
+</div>
+
+<!-- 3. Cliente -->
+<div class="secao">
+  <div class="secao-titulo">👤 Dados do Cliente</div>
+  <label>Nome Completo</label>
+  <input type="text" name="cliente_nome" placeholder="Nome do cliente"
+         autocapitalize="words" required>
+  <div class="row2">
+    <div>
+      <label>CPF</label>
+      <input type="text" name="cliente_cpf" placeholder="000.000.000-00"
+             inputmode="numeric">
+    </div>
+    <div>
+      <label>Telefone</label>
+      <input type="tel" name="cliente_telefone" placeholder="(85) 99999-0000">
+    </div>
+  </div>
+  <label>Endereço</label>
+  <input type="text" name="cliente_endereco" placeholder="Rua, número, bairro..."
+         autocapitalize="words">
+</div>
+
+<!-- 4. Medidas -->
+<div class="secao">
+  <div class="secao-titulo">📏 Medidas</div>
+  <div class="row2">
+    <div>
+      <label>Altura (cm)</label>
+      <input type="number" name="medida_altura" placeholder="170" inputmode="numeric">
+    </div>
+    <div>
+      <label>Braço (cm)</label>
+      <input type="number" name="medida_braco" placeholder="62" inputmode="numeric">
+    </div>
+  </div>
+  <label>Comp. Calça (cm)</label>
+  <input type="number" name="medida_calca" placeholder="98" inputmode="numeric">
+  <label>Obs. de Medidas</label>
+  <textarea name="medida_obs" rows="2"
+            placeholder="Ajustes, detalhes do alfaiate..."></textarea>
+</div>
+
+<!-- 5. Pagamento -->
+<div class="secao">
+  <div class="secao-titulo">💰 Valores e Pagamento</div>
+
+  <label>Forma de Pagamento</label>
+  <input type="hidden" name="forma_pagamento" id="forma_pagamento" value="">
+  <div class="formas-grid">
+    {% for val, label in [('pix','PIX'),('cartao_credito','Cartão Crédito'),('cartao_debito','Cartão Débito'),('dinheiro','Dinheiro')] %}
+    <button type="button" class="forma-btn" data-val="{{ val }}"
+            onclick="selecionarForma(this)">{{ label }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="row2">
+    <div>
+      <label>Valor Total (R$)</label>
+      <input type="number" name="valor_total_manual" id="valor_total"
+             placeholder="0,00" step="0.01" inputmode="decimal"
+             oninput="atualizarSaldo()">
+    </div>
+    <div>
+      <label>Sinal Pago (R$)</label>
+      <input type="number" name="valor_sinal" id="valor_sinal"
+             placeholder="0,00" step="0.01" inputmode="decimal"
+             oninput="atualizarSaldo()">
+    </div>
+  </div>
+
+  <div class="saldo-box">
+    💳 <span id="txt-saldo">Saldo na devolução: R$ 0,00</span>
+  </div>
+
+  <label>Tipo de Evento / Observações</label>
+  <textarea name="observacoes" rows="2"
+            placeholder="Ex: Casamento, formatura..."></textarea>
+</div>
+
+</form>
+
+<!-- Botão fixo -->
+<div class="footer-btn">
+  <button class="btn-salvar" id="btn-salvar" onclick="salvarContrato()">
+    ✓ Salvar e Gerar PDF
+  </button>
+  <div class="erro-msg" id="erro-msg"></div>
+</div>
+
+<!-- Modal de sucesso -->
+<div class="overlay" id="overlay-sucesso">
+  <div class="modal-sucesso">
+    <div class="icone">✅</div>
+    <h2>Contrato criado!</h2>
+    <p id="msg-sucesso">Contrato salvo com sucesso.</p>
+    <div class="modal-btns">
+      <a href="#" id="link-pdf" class="btn-pdf" target="_blank">
+        📄 Abrir Contrato PDF
+      </a>
+      <button class="btn-novo" onclick="novoContrato()">
+        + Novo Contrato
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Estado global ─────────────────────────────────────────────
+let pecasDisponiveis = [];
+let pecasSelecionadas = {};  // { tipo: [{id, codigo, desc}] }
+let tipoAtual = 'Blazer';
+let debounce = null;
+
+// ── Datas ─────────────────────────────────────────────────────
+document.getElementById('data_retirada').addEventListener('change', carregarPecas);
+document.getElementById('data_devolucao').addEventListener('change', carregarPecas);
+
+async function carregarPecas() {
+  const ini = document.getElementById('data_retirada').value;
+  const fim = document.getElementById('data_devolucao').value;
+  if (!ini || !fim) return;
+
+  document.getElementById('aviso-data').style.display = 'none';
+  document.getElementById('area-pecas').style.display = '';
+
+  const r = await fetch(`/app/pecas-disponiveis?inicio=${ini}&fim=${fim}`);
+  pecasDisponiveis = await r.json();
+}
+
+// ── Abas de tipo ──────────────────────────────────────────────
+function trocarTipo(tipo, btn) {
+  tipoAtual = tipo;
+  document.querySelectorAll('.tipo-tab').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  document.getElementById('busca-input').value = '';
+  fecharDropdown();
+}
+
+// ── Busca de peças ────────────────────────────────────────────
+function buscarPeca(texto) {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => renderDropdown(texto.trim().toLowerCase()), 150);
+}
+
+function renderDropdown(texto) {
+  const drop = document.getElementById('dropdown-pecas');
+  const jaSelIds = (pecasSelecionadas[tipoAtual] || []).map(p => p.id);
+
+  const filtradas = pecasDisponiveis.filter(p =>
+    p.tipo === tipoAtual &&
+    !jaSelIds.includes(p.id) &&
+    (!texto || `${p.codigo} ${p.cor} ${p.modelo} ${p.tamanho}`.toLowerCase().includes(texto))
+  );
+
+  if (!filtradas.length) {
+    drop.innerHTML = `<div class="peca-opcao" style="color:var(--sub);font-size:0.82rem;">
+      ${pecasDisponiveis.length ? 'Nenhuma peça encontrada.' : 'Carregando...'}
+    </div>`;
+    drop.style.display = 'block';
+    return;
+  }
+
+  drop.innerHTML = filtradas.slice(0, 20).map(p => {
+    const desc = [p.tamanho, p.cor, p.modelo].filter(Boolean).join(' · ');
+    const badge = p.livre
+      ? `<span class="badge-livre">Livre</span>`
+      : `<span class="badge-ocup">Ocupada</span>`;
+    const onclick = p.livre
+      ? `onclick="selecionarPeca(${p.id},'${p.codigo}','${desc.replace(/'/g,"\\'")}')"` : '';
+    return `<div class="peca-opcao ${!p.livre ? 'ocupada' : ''}" ${onclick}>
+      <div>
+        <div class="peca-cod">${p.codigo}</div>
+        <div class="peca-desc">${desc}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function fecharDropdown() {
+  document.getElementById('dropdown-pecas').style.display = 'none';
+}
+
+function selecionarPeca(id, codigo, desc) {
+  if (!pecasSelecionadas[tipoAtual]) pecasSelecionadas[tipoAtual] = [];
+  if (pecasSelecionadas[tipoAtual].find(p => p.id === id)) return;
+  pecasSelecionadas[tipoAtual].push({id, codigo, desc});
+  document.getElementById('busca-input').value = '';
+  fecharDropdown();
+  renderTags();
+}
+
+function removerPeca(tipo, id) {
+  pecasSelecionadas[tipo] = (pecasSelecionadas[tipo] || []).filter(p => p.id !== id);
+  renderTags();
+}
+
+function renderTags() {
+  const container = document.getElementById('pecas-tags');
+  const todas = Object.entries(pecasSelecionadas).flatMap(([tipo, arr]) =>
+    arr.map(p => ({...p, tipo}))
+  );
+  container.innerHTML = todas.map(p => `
+    <div class="peca-tag">
+      <input type="hidden" name="pecas_ids" value="${p.id}">
+      <span><b>${p.codigo}</b>${p.desc ? ' · ' + p.desc : ''}</span>
+      <button type="button" onclick="removerPeca('${p.tipo}',${p.id})">×</button>
+    </div>
+  `).join('');
+}
+
+// Fecha dropdown ao tocar fora
+document.addEventListener('touchstart', e => {
+  if (!e.target.closest('.busca-peca') && !e.target.closest('.peca-dropdown')) {
+    fecharDropdown();
+  }
+});
+
+// ── Forma de pagamento ────────────────────────────────────────
+function selecionarForma(btn) {
+  document.querySelectorAll('.forma-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  document.getElementById('forma_pagamento').value = btn.dataset.val;
+}
+
+// ── Saldo ─────────────────────────────────────────────────────
+function atualizarSaldo() {
+  const total = parseFloat(document.getElementById('valor_total').value || 0);
+  const sinal = parseFloat(document.getElementById('valor_sinal').value || 0);
+  const saldo = Math.max(0, total - sinal);
+  document.getElementById('txt-saldo').textContent =
+    'Saldo na devolução: R$ ' + saldo.toFixed(2).replace('.', ',');
+}
+
+// ── Salvar ────────────────────────────────────────────────────
+async function salvarContrato() {
+  const btn = document.getElementById('btn-salvar');
+  const erroEl = document.getElementById('erro-msg');
+  erroEl.style.display = 'none';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Salvando...';
+
+  // Coleta dados do formulário
+  const form = document.getElementById('form-contrato');
+  const data = new FormData(form);
+
+  // Adiciona peças selecionadas
+  const jaTemPecas = data.getAll('pecas_ids');
+  if (!jaTemPecas.length) {
+    // Força atualização das tags (garante os hidden inputs)
+    renderTags();
+  }
+
+  try {
+    const resp = await fetch('/app/salvar', {
+      method: 'POST',
+      body: new FormData(form)
+    });
+    const result = await resp.json();
+
+    if (result.erro) {
+      erroEl.textContent = result.erro;
+      erroEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '✓ Salvar e Gerar PDF';
+      return;
+    }
+
+    // Sucesso
+    document.getElementById('msg-sucesso').textContent =
+      `Contrato #${String(result.contrato_id).padStart(4,'0')} criado com sucesso!`;
+    document.getElementById('link-pdf').href = `/app/pdf/${result.contrato_id}`;
+    document.getElementById('overlay-sucesso').classList.add('visivel');
+
+  } catch(e) {
+    erroEl.textContent = 'Erro de conexão. Tente novamente.';
+    erroEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '✓ Salvar e Gerar PDF';
+  }
+}
+
+function novoContrato() {
+  document.getElementById('overlay-sucesso').classList.remove('visivel');
+  document.getElementById('form-contrato').reset();
+  pecasSelecionadas = {};
+  pecasDisponiveis = [];
+  document.getElementById('pecas-tags').innerHTML = '';
+  document.getElementById('aviso-data').style.display = 'flex';
+  document.getElementById('area-pecas').style.display = 'none';
+  document.getElementById('txt-saldo').textContent = 'Saldo na devolução: R$ 0,00';
+  document.querySelectorAll('.forma-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('forma_pagamento').value = '';
+  document.getElementById('btn-salvar').disabled = false;
+  document.getElementById('btn-salvar').innerHTML = '✓ Salvar e Gerar PDF';
+  window.scrollTo(0, 0);
+}
+
+// ── Service Worker ────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/assets/pwa/sw.js');
+}
+</script>
+</body>
+</html>

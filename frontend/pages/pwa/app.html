@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#c2185b">
+  <title>Novo Contrato — Nobre Vestidos</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #18080f; color: #e0e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh; padding-bottom: 100px;
+    }
+
+    /* Topo fixo */
+    .topbar {
+      background: #c2185b; padding: 14px 16px 12px;
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid #e8b84b;
+    }
+    .topbar-marca { font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
+    .topbar-marca span { color: #e8b84b; }
+    .topbar-sub { font-size: 0.7rem; color: #f48fb1; }
+    .topbar-sair { color: #f48fb1; font-size: 0.78rem; text-decoration: none; padding: 4px 10px; border: 1px solid #c2185b; border-radius: 20px; }
+
+    /* Conteúdo */
+    .content { padding: 16px; }
+
+    /* Seções */
+    .secao {
+      background: #2e1020; border: 1px solid #c2185b;
+      border-radius: 14px; margin-bottom: 12px; overflow: hidden;
+    }
+    .secao-header {
+      padding: 12px 16px; border-bottom: 1px solid #c2185b;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .secao-num {
+      width: 22px; height: 22px; background: #e8b84b; color: #18080f;
+      border-radius: 50%; font-size: 0.72rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .secao-titulo { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #e8b84b; }
+    .secao-body { padding: 14px 16px; }
+
+    /* Campos */
+    .campo { margin-bottom: 14px; }
+    .campo:last-child { margin-bottom: 0; }
+    label {
+      display: block; font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: #f48fb1; margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%; background: #220d17; border: 1px solid #c2185b;
+      color: #e0e8f0; border-radius: 10px; padding: 13px 14px;
+      font-size: 16px; /* evita zoom no iOS */ outline: none;
+      -webkit-appearance: none; appearance: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #e8b84b; }
+    input::placeholder, textarea::placeholder { color: #2a4060; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238aabcc' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+    select option { background: #2e1020; }
+    textarea { resize: none; }
+
+    /* Linha dupla */
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Busca de peças */
+    .peca-secao { margin-bottom: 14px; }
+    .peca-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #f48fb1; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .peca-busca-wrap { position: relative; }
+    .peca-busca-input {
+      width: 100%; background: #220d17; border: 1px solid #c2185b;
+      color: #e0e8f0; border-radius: 10px; padding: 12px 14px;
+      font-size: 16px; outline: none; -webkit-appearance: none;
+    }
+    .peca-busca-input:focus { border-color: #f06292; }
+    .peca-busca-input::placeholder { color: #2a4060; }
+
+    .peca-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+      background: #2e1020; border: 1px solid #f06292; border-top: none;
+      border-radius: 0 0 10px 10px; max-height: 200px; overflow-y: auto; display: none;
+    }
+    .peca-opcao {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-bottom: 1px solid #361525;
+      font-size: 0.85rem;
+    }
+    .peca-opcao:last-child { border-bottom: none; }
+    .peca-opcao:active { background: #44102c; }
+    .peca-opcao.ocupada { opacity: 0.4; }
+    .badge-livre { background:#0d3321; color:#4ade80; font-size:0.65rem; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+    .badge-ocup  { background:#3d1525; color:#f87171; font-size:0.65rem; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+
+    /* Tags selecionadas */
+    .pecas-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .peca-tag {
+      background: #421020; border: 1px solid #f06292;
+      border-radius: 20px; padding: 5px 10px 5px 12px;
+      font-size: 0.78rem; color: #e0e8f0;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .peca-tag button {
+      background: none; border: none; color: #f87171;
+      font-size: 1rem; cursor: pointer; padding: 0; line-height: 1;
+    }
+
+    /* Saldo */
+    .saldo-box {
+      background: #220d17; border: 1px solid #c2185b; border-radius: 10px;
+      padding: 12px 14px; display: flex; align-items: center; gap: 8px;
+      color: #e8b84b; font-weight: 700; font-size: 0.95rem; margin-top: 4px;
+    }
+
+    /* Forma pagamento — botões */
+    .forma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .forma-btn {
+      background: #220d17; border: 1px solid #c2185b; color: #f48fb1;
+      border-radius: 10px; padding: 11px 8px; font-size: 0.82rem;
+      text-align: center; cursor: pointer; transition: all 0.15s;
+      -webkit-appearance: none;
+    }
+    .forma-btn.ativo { background: #421020; border-color: #e8b84b; color: #e8b84b; font-weight: 600; }
+
+    /* Aviso */
+    .aviso {
+      background: #220d17; border: 1px solid #c2185b; border-radius: 10px;
+      padding: 12px 14px; font-size: 0.82rem; color: #f48fb1;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .aviso.erro { border-color: #3d1525; color: #f87171; background: #1a0a0a; }
+
+    /* Botão principal */
+    .btn-salvar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 16px; background: #18080f; border-top: 1px solid #c2185b;
+      display: flex; gap: 10px; z-index: 50;
+    }
+    .btn-pdf {
+      flex: 1; background: #e8b84b; color: #18080f; border: none;
+      border-radius: 12px; padding: 14px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; -webkit-appearance: none;
+    }
+    .btn-pdf:active { background: #d4a43a; }
+    .btn-novo {
+      flex: 1; background: #c2185b; color: #fff; border: 1px solid #e91e8c;
+      border-radius: 12px; padding: 14px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; -webkit-appearance: none;
+    }
+    .btn-novo:active { background: #0f2540; }
+
+    /* Toast */
+    .toast-wrap { position: fixed; top: 70px; left: 16px; right: 16px; z-index: 999; }
+    .toast {
+      background: #0d3321; border: 1px solid #4ade80; color: #4ade80;
+      border-radius: 10px; padding: 12px 16px; font-size: 0.88rem;
+      display: none; animation: slideIn 0.3s ease;
+    }
+    .toast.erro { background: #2d1111; border-color: #f87171; color: #f87171; }
+    @keyframes slideIn { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+<!-- Topo -->
+<div class="topbar">
+  <div>
+    <div class="topbar-marca">ESPAÇO <span>D</span> LUXO</div>
+    <div class="topbar-sub">Novo Contrato</div>
+  </div>
+  <a href="/logout" class="topbar-sair">Sair</a>
+</div>
+
+<!-- Toast de feedback -->
+<div class="toast-wrap">
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="content">
+<form id="form-app" method="POST" action="/contratos/novo">
+<input type="hidden" name="forma_pagamento" id="forma_hidden" value="">
+
+<!-- 1. PERÍODO -->
+<div class="secao">
+  <div class="secao-header">
+    <div class="secao-num">1</div>
+    <div class="secao-titulo">Período do Aluguel</div>
+  </div>
+  <div class="secao-body">
+    <div class="row2">
+      <div class="campo">
+        <label>Data de Saída</label>
+        <input type="date" name="data_retirada" id="data_retirada"
+               required min="{{ hoje }}">
+      </div>
+      <div class="campo">
+        <label>Data de Devolução</label>
+        <input type="date" name="data_devolucao" id="data_devolucao"
+               required min="{{ hoje }}">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. PEÇAS -->
+<div class="secao">
+  <div class="secao-header">
+    <div class="secao-num">2</div>
+    <div class="secao-titulo">Peças do Aluguel</div>
+  </div>
+  <div class="secao-body">
+
+    <div id="aviso-datas" class="aviso">
+      💡 Selecione as datas para buscar as peças disponíveis.
+    </div>
+
+    <div id="area-busca" style="display:none;">
+      {% for tipo, icone, label in [
+        ('Blazer','🧥','Blazer'),('Calca','👖','Calça'),
+        ('Camisa','👔','Camisa'),('Colete','🦺','Colete'),('Sapato','👟','Sapato')
+      ] %}
+      <div class="peca-secao">
+        <div class="peca-label">{{ icone }} {{ label }}</div>
+        <div class="peca-busca-wrap">
+          <input type="text" class="peca-busca-input"
+                 placeholder="Buscar {{ label }}..."
+                 oninput="buscarPeca('{{ tipo }}', this)"
+                 onfocus="abrirDrop('{{ tipo }}')"
+                 autocomplete="off" autocorrect="off"
+                 autocapitalize="none">
+          <div class="peca-dropdown" id="drop-{{ tipo }}"></div>
+        </div>
+        <div class="pecas-tags" id="sel-{{ tipo }}"></div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+<!-- 3. DADOS DO CLIENTE -->
+<div class="secao">
+  <div class="secao-header">
+    <div class="secao-num">3</div>
+    <div class="secao-titulo">Dados do Cliente</div>
+  </div>
+  <div class="secao-body">
+    <div class="campo">
+      <label>Nome Completo</label>
+      <input type="text" name="cliente_nome" placeholder="Nome do cliente"
+             autocapitalize="words">
+    </div>
+    <div class="row2">
+      <div class="campo">
+        <label>CPF</label>
+        <input type="text" name="cliente_cpf" placeholder="000.000.000-00"
+               inputmode="numeric">
+      </div>
+      <div class="campo">
+        <label>Telefone</label>
+        <input type="tel" name="cliente_telefone" placeholder="(85) 99999-0000">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Endereço</label>
+      <input type="text" name="cliente_endereco" placeholder="Rua, número, bairro..."
+             autocapitalize="words">
+    </div>
+  </div>
+</div>
+
+<!-- 4. MEDIDAS -->
+<div class="secao">
+  <div class="secao-header">
+    <div class="secao-num">4</div>
+    <div class="secao-titulo">Medidas</div>
+  </div>
+  <div class="secao-body">
+    <div class="row2">
+      <div class="campo">
+        <label>Altura (cm)</label>
+        <input type="number" name="medida_altura" placeholder="170" inputmode="numeric">
+      </div>
+      <div class="campo">
+        <label>Braço (cm)</label>
+        <input type="number" name="medida_braco" placeholder="62" inputmode="numeric">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Comp. Calça (cm)</label>
+      <input type="number" name="medida_calca" placeholder="98" inputmode="numeric">
+    </div>
+    <div class="campo">
+      <label>Obs. Medidas</label>
+      <textarea name="medida_obs" rows="2"
+                placeholder="Ajustes, observações..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- 5. PAGAMENTO -->
+<div class="secao">
+  <div class="secao-header">
+    <div class="secao-num">5</div>
+    <div class="secao-titulo">Valores e Pagamento</div>
+  </div>
+  <div class="secao-body">
+    <div class="campo">
+      <label>Forma de Pagamento</label>
+      <div class="forma-grid">
+        {% for val, label in [('pix','PIX'),('cartao_credito','Cartão Crédito'),('cartao_debito','Cartão Débito'),('dinheiro','Dinheiro')] %}
+        <button type="button" class="forma-btn" data-val="{{ val }}"
+                onclick="selecionarForma(this)">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="row2">
+      <div class="campo">
+        <label>Valor Total (R$)</label>
+        <input type="number" name="valor_total_manual" id="val_total"
+               step="0.01" min="0" placeholder="0,00"
+               inputmode="decimal" oninput="calcSaldo()">
+      </div>
+      <div class="campo">
+        <label>Sinal Pago (R$)</label>
+        <input type="number" name="valor_sinal" id="val_sinal"
+               step="0.01" min="0" placeholder="0,00"
+               inputmode="decimal" oninput="calcSaldo()">
+      </div>
+    </div>
+    <div class="saldo-box">
+      💳 <span id="txt-saldo">Saldo na devolução: R$ 0,00</span>
+    </div>
+    <div class="campo" style="margin-top:14px;">
+      <label>Tipo de Evento / Observações</label>
+      <textarea name="observacoes" rows="2"
+                placeholder="Ex: Casamento, formatura..."></textarea>
+    </div>
+  </div>
+</div>
+
+</form>
+</div>
+
+<!-- Botões fixos no rodapé -->
+<div class="btn-salvar">
+  <button type="button" class="btn-pdf" onclick="salvarContrato('salvar_pdf')">
+    ✓ Salvar e Gerar PDF
+  </button>
+  <button type="button" class="btn-novo" onclick="salvarContrato('salvar')">
+    + Novo Contrato
+  </button>
+</div>
+
+<script>
+let pecasDisponiveis = [];
+let pecasSelecionadas = {};
+const hoje = "{{ hoje }}";
+
+// ── Datas ─────────────────────────────────────────────────
+document.getElementById('data_retirada').addEventListener('change', carregarPecas);
+document.getElementById('data_devolucao').addEventListener('change', carregarPecas);
+
+function carregarPecas() {
+  const ini = document.getElementById('data_retirada').value;
+  const fim = document.getElementById('data_devolucao').value;
+  if (!ini || !fim) return;
+  document.getElementById('aviso-datas').style.display = 'none';
+  document.getElementById('area-busca').style.display = '';
+  fetch(`/estoque/disponibilidade?inicio=${ini}&fim=${fim}`)
+    .then(r => r.json())
+    .then(p => { pecasDisponiveis = p; });
+}
+
+// ── Busca de peças ────────────────────────────────────────
+function abrirDrop(tipo) {
+  const input = document.querySelector(`#drop-${tipo}`).previousElementSibling;
+  mostrarOpcoes(tipo, input.value);
+}
+
+function buscarPeca(tipo, input) {
+  mostrarOpcoes(tipo, input.value);
+}
+
+function mostrarOpcoes(tipo, texto) {
+  const drop = document.getElementById('drop-' + tipo);
+  const jaIds = (pecasSelecionadas[tipo] || []).map(p => p.id);
+  const t = texto.trim().toLowerCase();
+
+  const filtradas = pecasDisponiveis.filter(p =>
+    p.tipo === tipo && !jaIds.includes(p.id) &&
+    (t === '' || (p.codigo+' '+p.cor+' '+p.modelo+' '+p.tamanho).toLowerCase().includes(t))
+  );
+
+  if (!filtradas.length) {
+    drop.innerHTML = `<div class="peca-opcao" style="color:#f48fb1;font-size:0.82rem;">
+      ${pecasDisponiveis.length ? 'Nenhuma peça encontrada.' : 'Selecione as datas primeiro.'}
+    </div>`;
+    drop.style.display = 'block';
+    return;
+  }
+
+  drop.innerHTML = filtradas.map(p => {
+    const desc = [p.tamanho, p.cor, p.modelo].filter(Boolean).join(' · ');
+    const badge = p.livre
+      ? `<span class="badge-livre">Livre</span>`
+      : `<span class="badge-ocup">Ocupada</span>`;
+    return `<div class="peca-opcao ${!p.livre?'ocupada':''}"
+                 onclick="${p.livre ? `selecionarPeca('${tipo}',${p.id},'${p.codigo}','${desc.replace(/'/g,"\\'")}')` : ''}">
+      <div>
+        <span style="color:#e8b84b;font-weight:700;">${p.codigo}</span>
+        <span style="color:#f48fb1;font-size:0.8rem;margin-left:6px;">${desc}</span>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function selecionarPeca(tipo, id, codigo, desc) {
+  if (!pecasSelecionadas[tipo]) pecasSelecionadas[tipo] = [];
+  if (pecasSelecionadas[tipo].find(p => p.id === id)) return;
+  pecasSelecionadas[tipo].push({id, codigo, desc});
+  renderTags(tipo);
+  const drop = document.getElementById('drop-' + tipo);
+  drop.previousElementSibling.value = '';
+  drop.style.display = 'none';
+}
+
+function removerPeca(tipo, id) {
+  pecasSelecionadas[tipo] = (pecasSelecionadas[tipo]||[]).filter(p => p.id !== id);
+  renderTags(tipo);
+}
+
+function renderTags(tipo) {
+  const container = document.getElementById('sel-' + tipo);
+  const sel = pecasSelecionadas[tipo] || [];
+  container.innerHTML = sel.map(p => `
+    <div class="peca-tag">
+      <input type="hidden" name="pecas_ids" value="${p.id}">
+      <span><b>${p.codigo}</b>${p.desc ? ' · ' + p.desc : ''}</span>
+      <button type="button" onclick="removerPeca('${tipo}',${p.id})">×</button>
+    </div>`).join('');
+}
+
+// ── Forma de pagamento ────────────────────────────────────
+function selecionarForma(btn) {
+  document.querySelectorAll('.forma-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  document.getElementById('forma_hidden').value = btn.dataset.val;
+}
+
+// ── Saldo ─────────────────────────────────────────────────
+function calcSaldo() {
+  const t = parseFloat(document.getElementById('val_total').value||0);
+  const s = parseFloat(document.getElementById('val_sinal').value||0);
+  const saldo = Math.max(0, t - s);
+  document.getElementById('txt-saldo').textContent =
+    'Saldo na devolução: R$ ' + saldo.toFixed(2).replace('.',',');
+}
+
+// ── Salvar ────────────────────────────────────────────────
+function salvarContrato(acao) {
+  const form = document.getElementById('form-app');
+  // Injeta campo acao
+  let acaoInput = form.querySelector('[name="acao"]');
+  if (!acaoInput) {
+    acaoInput = document.createElement('input');
+    acaoInput.type = 'hidden';
+    acaoInput.name = 'acao';
+    form.appendChild(acaoInput);
+  }
+  acaoInput.value = acao;
+  form.submit();
+}
+
+// Fecha dropdown ao tocar fora
+document.addEventListener('touchstart', function(e) {
+  if (!e.target.classList.contains('peca-busca-input')) {
+    document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
+  }
+});
+document.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('peca-busca-input')) {
+    document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
+  }
+});
+</script>
+</body>
+</html>

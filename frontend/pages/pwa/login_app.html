@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#18080f">
+  <title>Nobre Vestidos</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #18080f; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #2e1020; border: 1px solid #c2185b;
+      border-radius: 20px; padding: 2.5rem 1.8rem;
+      width: 100%; max-width: 360px;
+    }
+    .marca { text-align: center; margin-bottom: 2rem; }
+    .marca h1 {
+      font-size: 1.6rem; font-weight: 800; color: #fff;
+      letter-spacing: 0.05em;
+    }
+    .marca h1 span { color: #e8b84b; }
+    .marca p { font-size: 0.75rem; color: #f48fb1; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .linha { width: 36px; height: 2px; background: #e8b84b; margin: 10px auto 0; border-radius: 2px; }
+
+    label {
+      display: block; font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: #f48fb1; margin-bottom: 6px;
+    }
+    input {
+      width: 100%; background: #220d17; border: 1px solid #c2185b;
+      color: #e0e8f0; border-radius: 10px; padding: 13px 14px;
+      font-size: 1rem; margin-bottom: 1rem; outline: none;
+      -webkit-appearance: none;
+    }
+    input:focus { border-color: #e8b84b; }
+    input::placeholder { color: #2a4060; }
+
+    .erro {
+      background: #2d1111; border: 1px solid #5a2020;
+      color: #f87171; border-radius: 8px;
+      font-size: 0.85rem; padding: 10px 14px; margin-bottom: 1rem;
+    }
+
+    button {
+      width: 100%; background: #e8b84b; color: #18080f;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      -webkit-appearance: none; margin-top: 0.3rem;
+    }
+    button:active { background: #d4a43a; }
+  </style>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</head>
+<body>
+<div class="card">
+  <div class="marca">
+    <h1>ESPAÇO <span>D</span> LUXO</h1>
+    <p>Nobre Vestidos</p>
+    <div class="linha"></div>
+  </div>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="erro">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST">
+    <label>Login</label>
+    <input type="text" name="email" placeholder="Isaac"
+           autocomplete="username" autocapitalize="none" required>
+    <label>Senha</label>
+    <input type="password" name="senha" placeholder="••••••••"
+           autocomplete="current-password" required>
+    <button type="submit">Entrar</button>
+  </form>
+</div>
+</body>
+</html>

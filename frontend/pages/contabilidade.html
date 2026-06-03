@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Contabilidade{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <h4><i class="bi bi-cash-coin me-2"></i>Contabilidade — {{ nome_mes }} {{ ano }}</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('contabilidade.index', mes=mes_ant, ano=ano_ant) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    <a href="{{ url_for('contabilidade.index') }}" class="btn btn-outline-secondary btn-sm">Mês atual</a>
+    <a href="{{ url_for('contabilidade.index', mes=mes_prox, ano=ano_prox) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+  </div>
+</div>
+
+<!-- Resumo -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="val">R$ {{ "%.2f"|format(total_recebido) }}</div>
+      <div class="lbl"><i class="bi bi-cash me-1"></i>Total recebido</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="val">R$ {{ "%.2f"|format(total_sinais) }}</div>
+      <div class="lbl"><i class="bi bi-arrow-down-circle me-1"></i>Em sinais</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="val">R$ {{ "%.2f"|format(total_complementos) }}</div>
+      <div class="lbl"><i class="bi bi-plus-circle me-1"></i>Complementos</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="val text-danger">R$ {{ "%.2f"|format(total_em_aberto) }}</div>
+      <div class="lbl"><i class="bi bi-exclamation-circle me-1"></i>A receber</div>
+    </div>
+  </div>
+</div>
+
+<!-- Pagamentos do mês -->
+<div class="card mb-3">
+  <div class="card-header py-3">Pagamentos recebidos em {{ nome_mes }}</div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Data</th><th>Cliente</th><th>Contrato</th><th>Tipo</th><th>Forma</th><th class="text-end">Valor</th></tr></thead>
+      <tbody>
+      {% for row in pagamentos %}
+      <tr>
+        <td>{{ row.Pagamento.data.strftime('%d/%m/%Y') }}</td>
+        <td>{{ row.Cliente.nome }}</td>
+        <td>
+          <a href="{{ url_for('contratos.detalhe', id=row.Contrato.id) }}" class="text-decoration-none">
+            #{{ "%04d"|format(row.Contrato.id) }}
+          </a>
+        </td>
+        <td><span class="badge bg-light text-dark">{{ row.Pagamento.tipo.capitalize() }}</span></td>
+        <td>{{ row.Pagamento.forma.capitalize() }}</td>
+        <td class="text-end fw-semibold text-success">R$ {{ "%.2f"|format(row.Pagamento.valor) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">Nenhum pagamento neste período.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Saldos em aberto -->
+{% if em_aberto %}
+<div class="card">
+  <div class="card-header py-3 text-danger"><i class="bi bi-exclamation-circle me-1"></i>Contratos com saldo em aberto</div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>#</th><th>Cliente</th><th>Devolução</th><th>Total</th><th>Pago</th><th class="text-end">Saldo</th></tr></thead>
+      <tbody>
+      {% for c in em_aberto %}
+      <tr>
+        <td><a href="{{ url_for('contratos.detalhe', id=c.id) }}" class="text-decoration-none">#{{ "%04d"|format(c.id) }}</a></td>
+        <td>{{ c.cliente.nome }}</td>
+        <td>{{ c.data_devolucao.strftime('%d/%m/%Y') }}</td>
+        <td>R$ {{ "%.2f"|format(c.valor_total) }}</td>
+        <td>R$ {{ "%.2f"|format(c.valor_pago) }}</td>
+        <td class="text-end fw-semibold text-danger">R$ {{ "%.2f"|format(c.saldo_restante) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

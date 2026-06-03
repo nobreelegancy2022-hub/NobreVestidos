@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Editar Peça{% endblock %}
+{% block content %}
+
+<style>
+  body, .main { background: #18080f; color: #e0e8f0; }
+  .secao { background: #2e1020; border: 1px solid #c2185b; border-radius: 12px; padding: 1.4rem 1.6rem; margin-bottom: 1.2rem; }
+  .secao-titulo { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #e8b84b; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #c2185b; padding-bottom: 0.6rem; }
+  .form-label-top { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #f48fb1; margin-bottom: 5px; }
+  .form-control, .form-select { background: #220d17; border: 1px solid #c2185b; color: #e0e8f0; border-radius: 8px; }
+  .form-control:focus, .form-select:focus { background: #220d17; border-color: #f06292; color: #e0e8f0; box-shadow: 0 0 0 2px rgba(240,98,146,0.2); }
+  .form-control::placeholder { color: #a06070; }
+  .form-select option { background: #220d17; }
+  .btn-salvar { background: #e8b84b; color: #18080f; border: none; border-radius: 25px; padding: 9px 24px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+  .btn-salvar:hover { background: #d4a43a; }
+  .btn-voltar { background: transparent; border: 1px solid #c2185b; color: #f48fb1; border-radius: 25px; padding: 9px 20px; font-size: 0.88rem; text-decoration: none; }
+  .btn-voltar:hover { border-color: #f06292; color: #e0e8f0; }
+  .foto-atual { max-width: 200px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #c2185b; }
+  .foto-upload-area { border: 2px dashed #c2185b; border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #220d17; }
+  .foto-upload-area:hover { border-color: #e8b84b; }
+  .foto-upload-area input[type="file"] { display: none; }
+  .foto-preview { max-width: 100%; max-height: 160px; border-radius: 8px; margin-top: 8px; display: none; }
+</style>
+
+<h4 class="fw-bold mb-3" style="color:#e0e8f0;">
+  Editar {{ 'Vestido' if peca.tipo == 'Vestido' else 'Acessório' }}
+  <span style="color:#e8b84b;">{{ peca.codigo }}</span>
+</h4>
+
+<form method="POST" enctype="multipart/form-data">
+<div class="secao">
+  <div class="secao-titulo">
+    {{ '👗' if peca.tipo == 'Vestido' else '💎' }}
+    DADOS DA PEÇA
+  </div>
+
+  {% if peca.tipo == 'Vestido' %}
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <label class="form-label-top">Cor</label>
+      <input type="text" name="cor" class="form-control" value="{{ peca.cor or '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label-top">Modelo</label>
+      <input type="text" name="modelo" class="form-control" value="{{ peca.modelo or '' }}">
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label-top">Foto</label>
+    {% if peca.foto_path %}
+    <div class="mb-2">
+      <img src="{{ url_for('static', filename=peca.foto_path) }}" class="foto-atual" alt="Foto atual">
+      <div style="font-size:0.75rem;color:#f48fb1;">Foto atual — envie uma nova para substituir</div>
+    </div>
+    {% endif %}
+    <div class="foto-upload-area" onclick="document.getElementById('foto-input').click()">
+      <i class="bi bi-camera" style="font-size:1.4rem;color:#f06292;"></i>
+      <div style="color:#f48fb1;font-size:0.82rem;margin-top:6px;">Clique para trocar a foto</div>
+      <img id="foto-preview" class="foto-preview" src="" alt="preview">
+      <input type="file" id="foto-input" name="foto" accept="image/*" onchange="mostrarPreview(this)">
+    </div>
+  </div>
+  {% else %}
+  <div class="mb-3">
+    <label class="form-label-top">Nome / Descrição</label>
+    <input type="text" name="descricao" class="form-control" value="{{ peca.descricao or '' }}">
+  </div>
+  {% endif %}
+
+  <div class="mb-4">
+    <label class="form-label-top">Status</label>
+    <select name="status" class="form-select">
+      {% for s in status_opts %}
+      <option value="{{ s }}" {{ 'selected' if peca.status == s }}>
+        {{ s.capitalize() }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="d-flex gap-3">
+    <button type="submit" class="btn-salvar">Salvar Alterações</button>
+    <a href="{{ url_for('estoque.index', tipo=peca.tipo) }}" class="btn-voltar">Voltar</a>
+  </div>
+</div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function mostrarPreview(input) {
+  const preview = document.getElementById('foto-preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

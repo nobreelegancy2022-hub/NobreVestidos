@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Agenda de Saídas{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+  <h4><i class="bi bi-calendar3 me-2"></i>
+    {% if visao == 'semana' %}
+      Agenda — Semana Atual
+    {% else %}
+      Agenda — {{ nome_mes }} {{ ano }}
+    {% endif %}
+  </h4>
+  <div class="d-flex gap-2">
+    <!-- Alternância de visão -->
+    <div class="btn-group btn-group-sm">
+      <a href="{{ url_for('agenda.index', visao='mes', mes=mes, ano=ano) }}"
+         class="btn {{ 'btn-primary' if visao == 'mes' else 'btn-outline-secondary' }}">
+        <i class="bi bi-calendar-month me-1"></i>Mês
+      </a>
+      <a href="{{ url_for('agenda.index', visao='semana') }}"
+         class="btn {{ 'btn-primary' if visao == 'semana' else 'btn-outline-secondary' }}">
+        <i class="bi bi-calendar-week me-1"></i>Semana Atual
+      </a>
+    </div>
+    {% if visao == 'mes' %}
+    <a href="{{ url_for('agenda.index', visao='mes', mes=mes_ant, ano=ano_ant) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    <a href="{{ url_for('agenda.index', visao='mes') }}" class="btn btn-outline-secondary btn-sm">Hoje</a>
+    <a href="{{ url_for('agenda.index', visao='mes', mes=mes_prox, ano=ano_prox) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{% if visao == 'semana' %}
+<!-- ========== VISÃO SEMANA ========== -->
+<div class="mb-2">
+  <span class="text-muted small">
+    <i class="bi bi-calendar-range me-1"></i>
+    {{ inicio_semana.strftime('%d/%m/%Y') }} até {{ fim_semana.strftime('%d/%m/%Y') }}
+  </span>
+</div>
+
+<div class="row g-3">
+  {% set nomes_dias = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'] %}
+  {% for item in dias_semana %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100 {% if item.data == hoje %}border-primary{% endif %}">
+      <div class="card-header py-2 d-flex justify-content-between align-items-center
+                  {% if item.data == hoje %}bg-primary text-white{% endif %}">
+        <span class="fw-semibold small">{{ nomes_dias[loop.index0] }}</span>
+        <span class="{% if item.data == hoje %}text-white{% else %}text-muted{% endif %} small">
+          {{ item.data.strftime('%d/%m') }}
+          {% if item.data == hoje %}<span class="badge bg-white text-primary ms-1" style="font-size:0.65rem;">Hoje</span>{% endif %}
+        </span>
+      </div>
+      <div class="card-body p-2">
+        {% if item.contratos %}
+          {% for c in item.contratos %}
+          <a href="{{ url_for('contratos.detalhe', id=c.id) }}" class="text-decoration-none">
+            <div class="p-2 mb-2 rounded" style="background:#eef4ff;border-left:3px solid #c2185b;">
+              <div class="fw-semibold small" style="color:#c2185b;">{{ c.cliente.nome }}</div>
+              <div class="text-muted" style="font-size:0.72rem;">
+                {{ c.itens|length }} peça(s) — devolução {{ c.data_devolucao.strftime('%d/%m') }}
+              </div>
+              <div style="font-size:0.72rem;">
+                {% for item_c in c.itens %}
+                <span class="badge bg-light text-dark me-1" style="font-size:0.65rem;">{{ item_c.peca.tipo }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted text-center mb-0 py-2" style="font-size:0.8rem;">Sem retiradas</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<!-- ========== VISÃO MÊS ========== -->
+<div class="cal-grid mb-1">
+  {% for d in ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'] %}
+  <div class="cal-day-header">{{ d }}</div>
+  {% endfor %}
+</div>
+
+<div class="cal-grid">
+  {% for semana in cal %}
+    {% for dia in semana %}
+      {% if dia == 0 %}
+      <div class="cal-day vazio"></div>
+      {% else %}
+      <div class="cal-day {% if dia == hoje.day and mes == hoje.month and ano == hoje.year %}hoje{% endif %}">
+        <div class="num">{{ dia }}</div>
+        {% if dia in agenda %}
+          {% for c in agenda[dia] %}
+          <a href="{{ url_for('contratos.detalhe', id=c.id) }}" style="text-decoration:none;">
+            <div class="cal-evento" title="{{ c.cliente.nome }} — {{ c.itens|length }} peça(s)">
+              <i class="bi bi-person-fill" style="font-size:0.6rem;"></i>
+              {{ c.cliente.nome.split()[0] }}
+              <span style="opacity:0.7;">({{ c.itens|length }})</span>
+            </div>
+          </a>
+          {% endfor %}
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>
+
+<div class="mt-3 d-flex gap-3 align-items-center">
+  <div class="d-flex align-items-center gap-2">
+    <div style="width:14px;height:14px;border-radius:3px;background:#c2185b;"></div>
+    <span class="small text-muted">Retirada de peças</span>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <div style="width:14px;height:14px;border-radius:3px;border:2px solid #c2185b;"></div>
+    <span class="small text-muted">Hoje</span>
+  </div>
+</div>
+
+{% if not agenda %}
+<div class="alert alert-light mt-3 text-muted small">
+  <i class="bi bi-info-circle me-1"></i> Nenhuma retirada programada para este mês.
+</div>
+{% endif %}
+{% endif %}
+
+{% endblock %}

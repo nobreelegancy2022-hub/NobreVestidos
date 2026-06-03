@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Consultas{% endblock %}
+{% block content %}
+
+<style>
+  body, .main { background: #18080f; color: #e0e8f0; }
+  h4.page-titulo { font-size: 1.5rem; font-weight: 700; color: #e0e8f0; margin-bottom: 4px; }
+  .page-sub { font-size: 0.85rem; color: #f48fb1; margin-bottom: 1.4rem; }
+
+  /* Barra de busca */
+  .busca-box {
+    background: #2e1020; border: 1px solid #c2185b;
+    border-radius: 14px; padding: 1.4rem 1.6rem; margin-bottom: 1.2rem;
+  }
+  .busca-input-wrap {
+    display: flex; align-items: center; gap: 10px;
+    background: #220d17; border: 1px solid #c2185b;
+    border-radius: 10px; padding: 10px 16px; transition: border-color 0.15s;
+  }
+  .busca-input-wrap:focus-within { border-color: #e8b84b; }
+  .busca-input-wrap i { color: #f48fb1; font-size: 1.1rem; flex-shrink: 0; }
+  .busca-input {
+    background: transparent; border: none; color: #e0e8f0;
+    font-size: 1rem; flex: 1; outline: none;
+  }
+  .busca-input::placeholder { color: #2a4060; }
+  .busca-clear {
+    background: none; border: none; color: #f48fb1;
+    cursor: pointer; padding: 0; font-size: 1rem;
+    display: none;
+  }
+  .busca-clear:hover { color: #f87171; }
+
+  /* Filtros de tipo */
+  .filtros { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+  .filtro-btn {
+    padding: 5px 16px; border-radius: 20px; border: 1px solid #c2185b;
+    background: transparent; color: #f48fb1; font-size: 0.82rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filtro-btn:hover { border-color: #f06292; color: #e0e8f0; }
+  .filtro-btn.ativo { background: #c2185b; color: #e8b84b; border-color: #e8b84b; }
+
+  /* Resultados */
+  .resultados-wrap { display: flex; flex-direction: column; gap: 1rem; }
+
+  .resultado-secao {
+    background: #2e1020; border: 1px solid #c2185b;
+    border-radius: 12px; overflow: hidden;
+  }
+  .resultado-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-bottom: 1px solid #c2185b;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #e8b84b;
+  }
+  .resultado-header .count {
+    margin-left: auto; background: #c2185b; color: #f48fb1;
+    border-radius: 20px; padding: 1px 10px; font-size: 0.68rem; font-weight: 600;
+  }
+
+  /* Tabela de resultados */
+  .res-table { width: 100%; border-collapse: collapse; }
+  .res-table th {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #d06080;
+    padding: 8px 16px; border-bottom: 1px solid #361525; text-align: left;
+  }
+  .res-table td {
+    padding: 10px 16px; border-bottom: 1px solid #361525;
+    font-size: 0.84rem; color: #e0e8f0; vertical-align: middle;
+  }
+  .res-table tr:last-child td { border-bottom: none; }
+  .res-table tr:hover td { background: #361525; }
+
+  .cod { color: #e8b84b; font-weight: 600; font-size: 0.8rem; }
+  .sub { color: #f48fb1; font-size: 0.76rem; }
+
+  /* Badges */
+  .badge-disp { background:#0d3321; color:#4ade80; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+  .badge-alug { background:#3d1525; color:#f87171; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+  .badge-man  { background:#2d1f00; color:#fbbf24; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+  .badge-ativo     { background:#0d2040; color:#60a5fa; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+  .badge-devolvido { background:#0d3321; color:#4ade80; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+  .badge-atrasado  { background:#3d1525; color:#f87171; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+  .badge-cancelado { background:#1a1a2e; color:#6b7280; border-radius:20px; padding:2px 9px; font-size:0.7rem; font-weight:600; }
+
+  .link-ver {
+    background: transparent; border: 1px solid #d81b60; color: #f48fb1;
+    border-radius: 6px; padding: 3px 10px; font-size: 0.72rem;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .link-ver:hover { border-color: #f06292; color: #e0e8f0; }
+
+  /* Estado vazio / inicial */
+  .estado-inicial {
+    text-align: center; padding: 3rem 1rem; color: #a06070;
+  }
+  .estado-inicial i { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; color: #c2185b; }
+  .estado-inicial p { font-size: 0.9rem; margin: 0; }
+
+  .sem-resultado {
+    text-align: center; padding: 1.5rem; color: #a06070; font-size: 0.85rem;
+  }
+
+  /* Loading */
+  .spinner-wrap { text-align: center; padding: 2rem; }
+  .spinner-border { color: #e8b84b; }
+</style>
+
+<h4 class="page-titulo">Consultas</h4>
+<p class="page-sub">Busca unificada de peças, contratos e clientes.</p>
+
+<!-- Barra de busca -->
+<div class="busca-box">
+  <div class="busca-input-wrap">
+    <i class="bi bi-search"></i>
+    <input type="text" class="busca-input" id="campo-busca"
+           placeholder="Buscar por nome, código, cor, modelo, CPF, telefone..."
+           autocomplete="off">
+    <button class="busca-clear" id="btn-limpar" onclick="limparBusca()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <div class="filtros">
+    <button class="filtro-btn ativo" data-tipo="tudo" onclick="setFiltro(this)">
+      <i class="bi bi-grid me-1"></i>Tudo
+    </button>
+    <button class="filtro-btn" data-tipo="pecas" onclick="setFiltro(this)">
+      <i class="bi bi-box-seam me-1"></i>Peças
+    </button>
+    <button class="filtro-btn" data-tipo="contratos" onclick="setFiltro(this)">
+      <i class="bi bi-file-earmark-text me-1"></i>Contratos
+    </button>
+    <button class="filtro-btn" data-tipo="clientes" onclick="setFiltro(this)">
+      <i class="bi bi-people me-1"></i>Clientes
+    </button>
+  </div>
+</div>
+
+<!-- Resultados -->
+<div id="area-resultados">
+  <div class="estado-inicial">
+    <i class="bi bi-search"></i>
+    <p>Digite algo acima para buscar em todo o sistema.</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let filtroAtual = 'tudo';
+let debounceTimer = null;
+
+document.getElementById('campo-busca').addEventListener('input', function() {
+  const val = this.value.trim();
+  document.getElementById('btn-limpar').style.display = val ? 'block' : 'none';
+  clearTimeout(debounceTimer);
+  if (val.length < 2) {
+    if (!val) mostrarInicial();
+    return;
+  }
+  debounceTimer = setTimeout(() => buscar(val), 300);
+});
+
+function setFiltro(btn) {
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  filtroAtual = btn.dataset.tipo;
+  const termo = document.getElementById('campo-busca').value.trim();
+  if (termo.length >= 2) buscar(termo);
+}
+
+function limparBusca() {
+  document.getElementById('campo-busca').value = '';
+  document.getElementById('btn-limpar').style.display = 'none';
+  mostrarInicial();
+}
+
+function mostrarInicial() {
+  document.getElementById('area-resultados').innerHTML = `
+    <div class="estado-inicial">
+      <i class="bi bi-search"></i>
+      <p>Digite algo acima para buscar em todo o sistema.</p>
+    </div>`;
+}
+
+async function buscar(termo) {
+  document.getElementById('area-resultados').innerHTML = `
+    <div class="spinner-wrap"><div class="spinner-border" role="status"></div></div>`;
+
+  try {
+    const r = await fetch(`/consultas/buscar?q=${encodeURIComponent(termo)}&tipo=${filtroAtual}`);
+    const data = await r.json();
+    renderizar(data, termo);
+  } catch(e) {
+    document.getElementById('area-resultados').innerHTML =
+      '<div class="sem-resultado">Erro ao buscar. Tente novamente.</div>';
+  }
+}
+
+function badgePeca(status) {
+  const m = {disponivel:'badge-disp Disponível', alugada:'badge-alug Alugada',
+              manutencao:'badge-man Manutenção', inativa:'badge-inat Inativa'};
+  const [cls, label] = (m[status]||'badge-inat Inativo').split(' ');
+  return `<span class="${cls}">${label}</span>`;
+}
+function badgeContrato(status) {
+  const m = {ativo:'badge-ativo Ativo', devolvido:'badge-devolvido Devolvido',
+              atrasado:'badge-atrasado Atrasado', cancelado:'badge-cancelado Cancelado'};
+  const [cls, label] = (m[status]||'badge-cancelado —').split(' ');
+  return `<span class="${cls}">${label}</span>`;
+}
+
+function renderizar(data, termo) {
+  const { pecas, contratos, clientes } = data;
+  const total = pecas.length + contratos.length + clientes.length;
+
+  if (total === 0) {
+    document.getElementById('area-resultados').innerHTML =
+      `<div class="resultado-secao"><div class="sem-resultado">
+        <i class="bi bi-search me-2"></i>Nenhum resultado encontrado para "<b>${termo}</b>".
+      </div></div>`;
+    return;
+  }
+
+  let html = '<div class="resultados-wrap">';
+
+  // ── Peças ──────────────────────────────────────────────────
+  if (pecas.length) {
+    html += `<div class="resultado-secao">
+      <div class="resultado-header">
+        <i class="bi bi-box-seam"></i> Peças do Estoque
+        <span class="count">${pecas.length}</span>
+      </div>
+      <table class="res-table">
+        <thead><tr>
+          <th>Código</th><th>Tipo</th><th>Cor</th><th>Modelo</th><th>Tamanho</th><th>Status</th>
+        </tr></thead>
+        <tbody>`;
+    pecas.forEach(p => {
+      html += `<tr>
+        <td><span class="cod">${p.codigo}</span></td>
+        <td>${p.tipo}</td>
+        <td>${p.cor}</td>
+        <td>${p.modelo}</td>
+        <td>${p.tamanho}</td>
+        <td>${badgePeca(p.status)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // ── Contratos ──────────────────────────────────────────────
+  if (contratos.length) {
+    html += `<div class="resultado-secao">
+      <div class="resultado-header">
+        <i class="bi bi-file-earmark-text"></i> Contratos
+        <span class="count">${contratos.length}</span>
+      </div>
+      <table class="res-table">
+        <thead><tr>
+          <th>#</th><th>Cliente</th><th>Período</th><th>Peças</th><th>Valor</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody>`;
+    contratos.forEach(c => {
+      html += `<tr>
+        <td><span class="cod">#${c.id}</span></td>
+        <td>${c.cliente}</td>
+        <td><span class="sub">${c.retirada} → ${c.devolucao}</span></td>
+        <td><span class="sub">${c.pecas || '—'}</span></td>
+        <td>${c.valor}</td>
+        <td>${badgeContrato(c.status)}</td>
+        <td><a href="/contratos/${parseInt(c.id)}" class="link-ver">Ver</a></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // ── Clientes ───────────────────────────────────────────────
+  if (clientes.length) {
+    html += `<div class="resultado-secao">
+      <div class="resultado-header">
+        <i class="bi bi-people"></i> Clientes
+        <span class="count">${clientes.length}</span>
+      </div>
+      <table class="res-table">
+        <thead><tr>
+          <th>Nome</th><th>CPF</th><th>Telefone</th><th>Contratos</th><th></th>
+        </tr></thead>
+        <tbody>`;
+    clientes.forEach(c => {
+      html += `<tr>
+        <td class="fw-semibold">${c.nome}</td>
+        <td><span class="sub">${c.cpf}</span></td>
+        <td>${c.telefone}</td>
+        <td><span class="badge" style="background:#c2185b;color:#f48fb1;">${c.contratos}</span></td>
+        <td><a href="/clientes/${c.id}" class="link-ver">Ver</a></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+
+  html += '</div>';
+  document.getElementById('area-resultados').innerHTML = html;
+}
+</script>
+{% endblock %}
