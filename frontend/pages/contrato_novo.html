@@ -3,9 +3,9 @@
 {% block content %}
 
 <style>
-  body, .main { background: #18080f; color: #e0e8f0; }
+  body, .main { background: #f8e8ef; color: #2a0d1a; }
   .secao {
-    background: #2e1020; border: 1px solid #c2185b;
+    background: #fff0f5; border: 1px solid #c2185b;
     border-radius: 12px; padding: 1.4rem 1.6rem; margin-bottom: 1.2rem;
   }
   .secao-titulo {
@@ -16,27 +16,27 @@
   }
   .form-label-top {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: #f48fb1; margin-bottom: 5px;
+    text-transform: uppercase; color: #c2185b; margin-bottom: 5px;
   }
   .form-control, .form-select {
-    background: #220d17; border: 1px solid #c2185b; color: #e0e8f0; border-radius: 8px;
+    background: #fde8f0; border: 1px solid #c2185b; color: #2a0d1a; border-radius: 8px;
   }
   .form-control:focus, .form-select:focus {
-    background: #220d17; border-color: #f06292; color: #e0e8f0;
+    background: #fde8f0; border-color: #f06292; color: #2a0d1a;
     box-shadow: 0 0 0 2px rgba(240,98,146,0.2);
   }
   .form-control::placeholder { color: #a06070; }
-  .form-select option { background: #220d17; }
+  .form-select option { background: #fde8f0; }
 
   /* Busca de peças */
   .tipo-label {
     font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.07em; color: #f48fb1; margin: 14px 0 6px;
+    letter-spacing: 0.07em; color: #c2185b; margin: 14px 0 6px;
     display: flex; align-items: center; gap: 6px;
   }
   .peca-busca-wrap { position: relative; margin-bottom: 6px; }
   .peca-busca-input {
-    background: #220d17; border: 1px solid #c2185b; color: #e0e8f0;
+    background: #fde8f0; border: 1px solid #c2185b; color: #2a0d1a;
     border-radius: 8px; padding: 8px 12px; font-size: 0.84rem; width: 100%;
     transition: border-color 0.15s;
   }
@@ -45,12 +45,12 @@
 
   .peca-dropdown {
     position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
-    background: #2e1020; border: 1px solid #f06292; border-top: none;
+    background: #fff0f5; border: 1px solid #f06292; border-top: none;
     border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto; display: none;
   }
   .peca-opcao {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #361525;
+    padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #fde0ec;
     transition: background 0.1s;
   }
   .peca-opcao:last-child { border-bottom: none; }
@@ -64,7 +64,7 @@
   }
   .peca-tag {
     background: #421020; border: 1px solid #f06292; border-radius: 20px;
-    padding: 4px 10px 4px 12px; font-size: 0.78rem; color: #e0e8f0;
+    padding: 4px 10px 4px 12px; font-size: 0.78rem; color: #2a0d1a;
     display: flex; align-items: center; gap: 6px;
   }
   .peca-tag button {
@@ -74,16 +74,16 @@
   .peca-tag button:hover { color: #fff; }
 
   .saldo-box {
-    background: #220d17; border: 1px solid #c2185b; border-radius: 8px;
+    background: #fde8f0; border: 1px solid #c2185b; border-radius: 8px;
     padding: 12px 16px; display: flex; align-items: center; gap: 8px;
     color: #e8b84b; font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;
   }
 
   .btn-salvar-pdf {
-    background: #e8b84b; color: #18080f; border: none;
+    background: #e8b84b; color: #f8e8ef; border: none;
     border-radius: 25px; padding: 10px 26px; font-weight: 700; font-size: 0.9rem;
   }
-  .btn-salvar-pdf:hover { background: #d4a43a; color: #18080f; }
+  .btn-salvar-pdf:hover { background: #d4a43a; color: #f8e8ef; }
   .btn-salvar {
     background: #c2185b; color: #fff; border: 1px solid #e91e8c;
     border-radius: 25px; padding: 10px 26px; font-weight: 700; font-size: 0.9rem;
@@ -91,9 +91,9 @@
   .btn-salvar:hover { background: #d81b60; color: #fff; }
 
   .aviso-data {
-    background: #220d17; border: 1px solid #c2185b; border-radius: 8px;
+    background: #fde8f0; border: 1px solid #c2185b; border-radius: 8px;
     padding: 10px 14px; display: flex; align-items: center; gap: 8px;
-    color: #f48fb1; font-size: 0.83rem; margin-bottom: 10px;
+    color: #c2185b; font-size: 0.83rem; margin-bottom: 10px;
   }
 </style>
 
