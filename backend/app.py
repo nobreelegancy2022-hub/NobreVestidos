@@ -26,7 +26,7 @@ def create_app():
     login_manager.login_message = "Faça login para acessar o sistema."
 
     from backend.routers import (auth, estoque, clientes, contratos,
-                                  agenda, contabilidade, consultas, pwa)
+                                     agenda, contabilidade, consultas, pwa)
     app.register_blueprint(auth.bp)
     app.register_blueprint(estoque.bp)
     app.register_blueprint(clientes.bp)
