@@ -6,168 +6,192 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#c2185b">
-  <title>Novo Contrato — Nobre Vestidos</title>
-  <link rel="manifest" href="/manifest.json">
+  <title>Nobre Vestidos</title>
+  <link rel="manifest" href="/assets/pwa/manifest.json">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      background: #18080f; color: #e0e8f0;
+      background: #1a0812; color: #f0d0e0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100vh; padding-bottom: 100px;
+      min-height: 100dvh; padding-bottom: 72px;
     }
 
-    /* Topo fixo */
+    /* Topo */
     .topbar {
       background: #c2185b; padding: 14px 16px 12px;
+      padding-top: max(14px, env(safe-area-inset-top));
       position: sticky; top: 0; z-index: 50;
       display: flex; align-items: center; justify-content: space-between;
       border-bottom: 2px solid #e8b84b;
     }
     .topbar-marca { font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
     .topbar-marca span { color: #e8b84b; }
-    .topbar-sub { font-size: 0.7rem; color: #f48fb1; }
-    .topbar-sair { color: #f48fb1; font-size: 0.78rem; text-decoration: none; padding: 4px 10px; border: 1px solid #c2185b; border-radius: 20px; }
+    .topbar-sub { font-size: 0.7rem; color: #fce4ec; }
+    .topbar-sair { color: #fce4ec; font-size: 0.78rem; text-decoration: none;
+      padding: 4px 10px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; }
 
-    /* Conteúdo */
-    .content { padding: 16px; }
+    /* Nav inferior */
+    .bottomnav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      background: #2a0d1a; border-top: 2px solid #c2185b;
+      display: flex;
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 10px 8px; gap: 4px;
+      background: none; border: none; color: #c2185b;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em;
+      text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+    }
+    .nav-btn.ativo { color: #e8b84b; }
+    .nav-btn svg { width: 22px; height: 22px; }
 
-    /* Seções */
+    /* Telas */
+    .tela { display: none; padding: 14px; }
+    .tela.ativa { display: block; }
+
+    /* Cards de seção */
     .secao {
-      background: #2e1020; border: 1px solid #c2185b;
+      background: #2a0d1a; border: 1px solid #c2185b;
       border-radius: 14px; margin-bottom: 12px; overflow: hidden;
     }
     .secao-header {
-      padding: 12px 16px; border-bottom: 1px solid #c2185b;
+      padding: 11px 14px; border-bottom: 1px solid #c2185b;
       display: flex; align-items: center; gap: 8px;
     }
     .secao-num {
-      width: 22px; height: 22px; background: #e8b84b; color: #18080f;
+      width: 22px; height: 22px; background: #e8b84b; color: #1a0812;
       border-radius: 50%; font-size: 0.72rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .secao-titulo { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #e8b84b; }
-    .secao-body { padding: 14px 16px; }
+    .secao-titulo { font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #e8b84b; }
+    .secao-body { padding: 14px; }
 
     /* Campos */
-    .campo { margin-bottom: 14px; }
+    .campo { margin-bottom: 13px; }
     .campo:last-child { margin-bottom: 0; }
-    label {
-      display: block; font-size: 0.68rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.08em;
-      color: #f48fb1; margin-bottom: 6px;
-    }
+    label { display: block; font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; color: #f48fb1; margin-bottom: 5px; }
     input, select, textarea {
-      width: 100%; background: #220d17; border: 1px solid #c2185b;
-      color: #e0e8f0; border-radius: 10px; padding: 13px 14px;
-      font-size: 16px; /* evita zoom no iOS */ outline: none;
-      -webkit-appearance: none; appearance: none;
+      width: 100%; background: #1f0a14; border: 1px solid #c2185b;
+      color: #f0d0e0; border-radius: 10px; padding: 13px 14px;
+      font-size: 16px; outline: none; -webkit-appearance: none; appearance: none;
     }
     input:focus, select:focus, textarea:focus { border-color: #e8b84b; }
-    input::placeholder, textarea::placeholder { color: #2a4060; }
-    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238aabcc' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-    select option { background: #2e1020; }
+    input::placeholder, textarea::placeholder { color: #5a2a3a; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f48fb1' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+    select option { background: #2a0d1a; }
     textarea { resize: none; }
-
-    /* Linha dupla */
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-    /* Busca de peças */
-    .peca-secao { margin-bottom: 14px; }
-    .peca-label {
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    /* Busca peças */
+    .peca-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.07em; color: #f48fb1; margin-bottom: 6px;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .peca-busca-wrap { position: relative; }
-    .peca-busca-input {
-      width: 100%; background: #220d17; border: 1px solid #c2185b;
-      color: #e0e8f0; border-radius: 10px; padding: 12px 14px;
-      font-size: 16px; outline: none; -webkit-appearance: none;
-    }
-    .peca-busca-input:focus { border-color: #f06292; }
-    .peca-busca-input::placeholder { color: #2a4060; }
-
-    .peca-dropdown {
-      position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
-      background: #2e1020; border: 1px solid #f06292; border-top: none;
-      border-radius: 0 0 10px 10px; max-height: 200px; overflow-y: auto; display: none;
-    }
-    .peca-opcao {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 11px 14px; border-bottom: 1px solid #361525;
-      font-size: 0.85rem;
-    }
+      display: flex; align-items: center; gap: 5px; }
+    .peca-busca-wrap { position: relative; margin-bottom: 6px; }
+    .peca-busca-input { width: 100%; background: #1f0a14; border: 1px solid #c2185b;
+      color: #f0d0e0; border-radius: 10px; padding: 12px 14px;
+      font-size: 16px; outline: none; -webkit-appearance: none; }
+    .peca-busca-input:focus { border-color: #e8b84b; }
+    .peca-busca-input::placeholder { color: #5a2a3a; }
+    .peca-dropdown { position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+      background: #2a0d1a; border: 1px solid #e8b84b; border-top: none;
+      border-radius: 0 0 10px 10px; max-height: 200px; overflow-y: auto; display: none; }
+    .peca-opcao { display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-bottom: 1px solid #3a1525; font-size: 0.85rem; }
     .peca-opcao:last-child { border-bottom: none; }
-    .peca-opcao:active { background: #44102c; }
+    .peca-opcao:active { background: #3a1020; }
     .peca-opcao.ocupada { opacity: 0.4; }
-    .badge-livre { background:#0d3321; color:#4ade80; font-size:0.65rem; padding:3px 9px; border-radius:20px; white-space:nowrap; }
-    .badge-ocup  { background:#3d1525; color:#f87171; font-size:0.65rem; padding:3px 9px; border-radius:20px; white-space:nowrap; }
-
-    /* Tags selecionadas */
-    .pecas-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .peca-tag {
-      background: #421020; border: 1px solid #f06292;
-      border-radius: 20px; padding: 5px 10px 5px 12px;
-      font-size: 0.78rem; color: #e0e8f0;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .peca-tag button {
-      background: none; border: none; color: #f87171;
-      font-size: 1rem; cursor: pointer; padding: 0; line-height: 1;
-    }
+    .badge-livre { background:#0d3321; color:#4ade80; font-size:0.65rem; padding:3px 9px; border-radius:20px; }
+    .badge-ocup  { background:#3d1525; color:#f87171; font-size:0.65rem; padding:3px 9px; border-radius:20px; }
+    .pecas-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .peca-tag { background: #3a1020; border: 1px solid #e8b84b; border-radius: 20px;
+      padding: 5px 10px 5px 12px; font-size: 0.78rem; color: #f0d0e0;
+      display: flex; align-items: center; gap: 6px; }
+    .peca-tag button { background: none; border: none; color: #f87171; font-size: 1rem; cursor: pointer; }
 
     /* Saldo */
-    .saldo-box {
-      background: #220d17; border: 1px solid #c2185b; border-radius: 10px;
+    .saldo-box { background: #1f0a14; border: 1px solid #c2185b; border-radius: 10px;
       padding: 12px 14px; display: flex; align-items: center; gap: 8px;
-      color: #e8b84b; font-weight: 700; font-size: 0.95rem; margin-top: 4px;
-    }
+      color: #e8b84b; font-weight: 700; font-size: 0.92rem; margin-top: 4px; }
 
-    /* Forma pagamento — botões */
+    /* Forma pagamento */
     .forma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .forma-btn {
-      background: #220d17; border: 1px solid #c2185b; color: #f48fb1;
+    .forma-btn { background: #1f0a14; border: 1px solid #c2185b; color: #f48fb1;
       border-radius: 10px; padding: 11px 8px; font-size: 0.82rem;
-      text-align: center; cursor: pointer; transition: all 0.15s;
-      -webkit-appearance: none;
-    }
-    .forma-btn.ativo { background: #421020; border-color: #e8b84b; color: #e8b84b; font-weight: 600; }
+      text-align: center; cursor: pointer; -webkit-appearance: none; }
+    .forma-btn.ativo { background: #3a1020; border-color: #e8b84b; color: #e8b84b; font-weight: 600; }
 
     /* Aviso */
-    .aviso {
-      background: #220d17; border: 1px solid #c2185b; border-radius: 10px;
+    .aviso { background: #1f0a14; border: 1px solid #c2185b; border-radius: 10px;
       padding: 12px 14px; font-size: 0.82rem; color: #f48fb1;
-      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-    }
-    .aviso.erro { border-color: #3d1525; color: #f87171; background: #1a0a0a; }
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 
-    /* Botão principal */
-    .btn-salvar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      padding: 16px; background: #18080f; border-top: 1px solid #c2185b;
-      display: flex; gap: 10px; z-index: 50;
-    }
-    .btn-pdf {
-      flex: 1; background: #e8b84b; color: #18080f; border: none;
-      border-radius: 12px; padding: 14px; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; -webkit-appearance: none;
-    }
+    /* Botões de ação do contrato */
+    .btns-contrato { display: flex; gap: 10px; padding: 14px;
+      position: sticky; bottom: 72px; background: #1a0812;
+      border-top: 1px solid #c2185b; }
+    .btn-pdf { flex: 1; background: #e8b84b; color: #1a0812; border: none;
+      border-radius: 12px; padding: 14px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
     .btn-pdf:active { background: #d4a43a; }
-    .btn-novo {
-      flex: 1; background: #c2185b; color: #fff; border: 1px solid #e91e8c;
-      border-radius: 12px; padding: 14px; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; -webkit-appearance: none;
-    }
-    .btn-novo:active { background: #0f2540; }
+    .btn-novo { flex: 1; background: #c2185b; color: #fff; border: none;
+      border-radius: 12px; padding: 14px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+    .btn-novo:active { background: #a01648; }
+
+    /* ── ESTOQUE ── */
+    .est-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .est-tab { flex: 1; padding: 10px; border-radius: 10px;
+      border: 1px solid #c2185b; background: transparent;
+      color: #f48fb1; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-align: center; }
+    .est-tab.ativo { background: #c2185b; color: #fff; }
+
+    .est-form { background: #2a0d1a; border: 1px solid #c2185b;
+      border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+    .est-titulo { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #e8b84b; margin-bottom: 12px; }
+
+    .foto-area { border: 2px dashed #c2185b; border-radius: 10px;
+      padding: 16px; text-align: center; cursor: pointer; background: #1f0a14; }
+    .foto-area:active { border-color: #e8b84b; }
+    .foto-area input { display: none; }
+    .foto-area p { color: #f48fb1; font-size: 0.82rem; margin-top: 6px; }
+    .foto-preview { max-width: 100%; max-height: 150px; border-radius: 8px;
+      margin-top: 8px; display: none; }
+
+    .btn-cadastrar { width: 100%; background: #e8b84b; color: #1a0812;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 12px; }
+    .btn-cadastrar:active { background: #d4a43a; }
+
+    /* Lista peças estoque */
+    .est-lista { display: flex; flex-direction: column; gap: 8px; }
+    .est-item { background: #2a0d1a; border: 1px solid #c2185b;
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px; }
+    .est-item-foto { width: 48px; height: 48px; border-radius: 8px;
+      object-fit: cover; background: #1f0a14; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; overflow: hidden; }
+    .est-item-foto img { width: 100%; height: 100%; object-fit: cover; }
+    .est-item-info { flex: 1; min-width: 0; }
+    .est-item-cod { color: #e8b84b; font-size: 0.75rem; font-weight: 700; }
+    .est-item-nome { color: #f0d0e0; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .est-item-status { font-size: 0.68rem; margin-top: 2px; }
+    .s-disp { color: #4ade80; }
+    .s-alug { color: #f87171; }
+    .s-man  { color: #fbbf24; }
+    .est-vazio { text-align: center; color: #5a2a3a; padding: 2rem; font-size: 0.88rem; }
 
     /* Toast */
-    .toast-wrap { position: fixed; top: 70px; left: 16px; right: 16px; z-index: 999; }
-    .toast {
-      background: #0d3321; border: 1px solid #4ade80; color: #4ade80;
+    .toast-wrap { position: fixed; top: 70px; left: 16px; right: 16px; z-index: 999; pointer-events: none; }
+    .toast { background: #0d3321; border: 1px solid #4ade80; color: #4ade80;
       border-radius: 10px; padding: 12px 16px; font-size: 0.88rem;
-      display: none; animation: slideIn 0.3s ease;
-    }
+      display: none; animation: slideIn 0.3s ease; }
     .toast.erro { background: #2d1111; border-color: #f87171; color: #f87171; }
     @keyframes slideIn { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
   </style>
@@ -177,22 +201,23 @@
 <!-- Topo -->
 <div class="topbar">
   <div>
-    <div class="topbar-marca">ESPAÇO <span>D</span> LUXO</div>
-    <div class="topbar-sub">Novo Contrato</div>
+    <div class="topbar-marca">NOBRE <span>VESTIDOS</span></div>
+    <div class="topbar-sub" id="topbar-sub">Novo Contrato</div>
   </div>
   <a href="/logout" class="topbar-sair">Sair</a>
 </div>
 
-<!-- Toast de feedback -->
-<div class="toast-wrap">
-  <div class="toast" id="toast"></div>
-</div>
+<!-- Toast -->
+<div class="toast-wrap"><div class="toast" id="toast"></div></div>
 
-<div class="content">
+<!-- ══════════════════════════════════════════
+     TELA 1 — NOVO CONTRATO
+══════════════════════════════════════════ -->
+<div class="tela ativa" id="tela-contrato">
 <form id="form-app" method="POST" action="/contratos/novo">
 <input type="hidden" name="forma_pagamento" id="forma_hidden" value="">
 
-<!-- 1. PERÍODO -->
+<!-- 1. Período -->
 <div class="secao">
   <div class="secao-header">
     <div class="secao-num">1</div>
@@ -201,72 +226,59 @@
   <div class="secao-body">
     <div class="row2">
       <div class="campo">
-        <label>Data de Saída</label>
-        <input type="date" name="data_retirada" id="data_retirada"
-               required min="{{ hoje }}">
+        <label>Saída</label>
+        <input type="date" name="data_retirada" id="data_retirada" required min="{{ hoje }}">
       </div>
       <div class="campo">
-        <label>Data de Devolução</label>
-        <input type="date" name="data_devolucao" id="data_devolucao"
-               required min="{{ hoje }}">
+        <label>Devolução</label>
+        <input type="date" name="data_devolucao" id="data_devolucao" required min="{{ hoje }}">
       </div>
     </div>
   </div>
 </div>
 
-<!-- 2. PEÇAS -->
+<!-- 2. Peças -->
 <div class="secao">
   <div class="secao-header">
     <div class="secao-num">2</div>
     <div class="secao-titulo">Peças do Aluguel</div>
   </div>
   <div class="secao-body">
-
-    <div id="aviso-datas" class="aviso">
-      💡 Selecione as datas para buscar as peças disponíveis.
-    </div>
-
+    <div id="aviso-datas" class="aviso">💡 Selecione as datas para ver as peças disponíveis.</div>
     <div id="area-busca" style="display:none;">
-      {% for tipo, icone, label in [
-        ('Blazer','🧥','Blazer'),('Calca','👖','Calça'),
-        ('Camisa','👔','Camisa'),('Colete','🦺','Colete'),('Sapato','👟','Sapato')
-      ] %}
-      <div class="peca-secao">
+      {% for tipo, icone, label in [('Vestido','👗','Vestido'),('Acessorio','💎','Acessório')] %}
+      <div style="margin-bottom:14px;">
         <div class="peca-label">{{ icone }} {{ label }}</div>
         <div class="peca-busca-wrap">
           <input type="text" class="peca-busca-input"
                  placeholder="Buscar {{ label }}..."
                  oninput="buscarPeca('{{ tipo }}', this)"
                  onfocus="abrirDrop('{{ tipo }}')"
-                 autocomplete="off" autocorrect="off"
-                 autocapitalize="none">
+                 autocomplete="off" autocorrect="off" autocapitalize="none">
           <div class="peca-dropdown" id="drop-{{ tipo }}"></div>
         </div>
         <div class="pecas-tags" id="sel-{{ tipo }}"></div>
       </div>
       {% endfor %}
     </div>
-
   </div>
 </div>
 
-<!-- 3. DADOS DO CLIENTE -->
+<!-- 3. Cliente -->
 <div class="secao">
   <div class="secao-header">
     <div class="secao-num">3</div>
-    <div class="secao-titulo">Dados do Cliente</div>
+    <div class="secao-titulo">Dados da Cliente</div>
   </div>
   <div class="secao-body">
     <div class="campo">
       <label>Nome Completo</label>
-      <input type="text" name="cliente_nome" placeholder="Nome do cliente"
-             autocapitalize="words">
+      <input type="text" name="cliente_nome" placeholder="Nome da cliente" autocapitalize="words">
     </div>
     <div class="row2">
       <div class="campo">
         <label>CPF</label>
-        <input type="text" name="cliente_cpf" placeholder="000.000.000-00"
-               inputmode="numeric">
+        <input type="text" name="cliente_cpf" placeholder="000.000.000-00" inputmode="numeric">
       </div>
       <div class="campo">
         <label>Telefone</label>
@@ -275,42 +287,54 @@
     </div>
     <div class="campo">
       <label>Endereço</label>
-      <input type="text" name="cliente_endereco" placeholder="Rua, número, bairro..."
-             autocapitalize="words">
+      <input type="text" name="cliente_endereco" placeholder="Rua, número, bairro..." autocapitalize="words">
     </div>
   </div>
 </div>
 
-<!-- 4. MEDIDAS -->
+<!-- 4. Medidas -->
 <div class="secao">
   <div class="secao-header">
     <div class="secao-num">4</div>
-    <div class="secao-titulo">Medidas</div>
+    <div class="secao-titulo">Medidas do Vestido</div>
   </div>
   <div class="secao-body">
     <div class="row2">
       <div class="campo">
-        <label>Altura (cm)</label>
-        <input type="number" name="medida_altura" placeholder="170" inputmode="numeric">
+        <label>Cor</label>
+        <input type="text" name="medida_cor" placeholder="Ex: Vermelho">
       </div>
       <div class="campo">
-        <label>Braço (cm)</label>
-        <input type="number" name="medida_braco" placeholder="62" inputmode="numeric">
+        <label>Modelo</label>
+        <input type="text" name="medida_modelo" placeholder="Ex: Sereia">
+      </div>
+    </div>
+    <div class="row3">
+      <div class="campo">
+        <label>Busto (cm)</label>
+        <input type="number" name="medida_busto" placeholder="90" inputmode="numeric">
+      </div>
+      <div class="campo">
+        <label>Cintura (cm)</label>
+        <input type="number" name="medida_cintura" placeholder="70" inputmode="numeric">
+      </div>
+      <div class="campo">
+        <label>Barra (cm)</label>
+        <input type="number" name="medida_barra" placeholder="100" inputmode="numeric">
       </div>
     </div>
     <div class="campo">
-      <label>Comp. Calça (cm)</label>
-      <input type="number" name="medida_calca" placeholder="98" inputmode="numeric">
+      <label>Alça (cm)</label>
+      <input type="number" name="medida_alca" placeholder="25" inputmode="numeric">
     </div>
     <div class="campo">
-      <label>Obs. Medidas</label>
-      <textarea name="medida_obs" rows="2"
-                placeholder="Ajustes, observações..."></textarea>
+      <label>Observações</label>
+      <textarea name="medida_obs" rows="2" placeholder="Ajustes, observações..."></textarea>
     </div>
   </div>
 </div>
 
-<!-- 5. PAGAMENTO -->
+<!-- 5. Pagamento -->
 <div class="secao">
   <div class="secao-header">
     <div class="secao-num">5</div>
@@ -321,55 +345,182 @@
       <label>Forma de Pagamento</label>
       <div class="forma-grid">
         {% for val, label in [('pix','PIX'),('cartao_credito','Cartão Crédito'),('cartao_debito','Cartão Débito'),('dinheiro','Dinheiro')] %}
-        <button type="button" class="forma-btn" data-val="{{ val }}"
-                onclick="selecionarForma(this)">{{ label }}</button>
+        <button type="button" class="forma-btn" data-val="{{ val }}" onclick="selecionarForma(this)">{{ label }}</button>
         {% endfor %}
       </div>
     </div>
-    <div class="row2">
+    <div class="row2" style="margin-top:12px;">
       <div class="campo">
         <label>Valor Total (R$)</label>
-        <input type="number" name="valor_total_manual" id="val_total"
-               step="0.01" min="0" placeholder="0,00"
-               inputmode="decimal" oninput="calcSaldo()">
+        <input type="number" name="valor_total_manual" id="val_total" step="0.01" min="0" placeholder="0,00" inputmode="decimal" oninput="calcSaldo()">
       </div>
       <div class="campo">
         <label>Sinal Pago (R$)</label>
-        <input type="number" name="valor_sinal" id="val_sinal"
-               step="0.01" min="0" placeholder="0,00"
-               inputmode="decimal" oninput="calcSaldo()">
+        <input type="number" name="valor_sinal" id="val_sinal" step="0.01" min="0" placeholder="0,00" inputmode="decimal" oninput="calcSaldo()">
       </div>
     </div>
-    <div class="saldo-box">
-      💳 <span id="txt-saldo">Saldo na devolução: R$ 0,00</span>
-    </div>
-    <div class="campo" style="margin-top:14px;">
-      <label>Tipo de Evento / Observações</label>
-      <textarea name="observacoes" rows="2"
-                placeholder="Ex: Casamento, formatura..."></textarea>
+    <div class="saldo-box">💳 <span id="txt-saldo">Saldo na devolução: R$ 0,00</span></div>
+    <div class="campo" style="margin-top:12px;">
+      <label>Observações / Evento</label>
+      <textarea name="observacoes" rows="2" placeholder="Ex: Casamento, debutante..."></textarea>
     </div>
   </div>
 </div>
 
 </form>
+
+<!-- Botões -->
+<div class="btns-contrato">
+  <button type="button" class="btn-pdf" onclick="salvarContrato('salvar_pdf')">✓ Salvar e PDF</button>
+  <button type="button" class="btn-novo" onclick="salvarContrato('salvar')">+ Novo</button>
+</div>
 </div>
 
-<!-- Botões fixos no rodapé -->
-<div class="btn-salvar">
-  <button type="button" class="btn-pdf" onclick="salvarContrato('salvar_pdf')">
-    ✓ Salvar e Gerar PDF
-  </button>
-  <button type="button" class="btn-novo" onclick="salvarContrato('salvar')">
-    + Novo Contrato
-  </button>
+<!-- ══════════════════════════════════════════
+     TELA 2 — ESTOQUE
+══════════════════════════════════════════ -->
+<div class="tela" id="tela-estoque">
+
+  <div class="est-tabs">
+    <button class="est-tab ativo" id="tab-vestido" onclick="mudarAba('Vestido')">👗 Vestidos</button>
+    <button class="est-tab" id="tab-acessorio" onclick="mudarAba('Acessorio')">💎 Acessórios</button>
+  </div>
+
+  <!-- Formulário de cadastro Vestido -->
+  <div class="est-form" id="form-vestido">
+    <div class="est-titulo">+ Cadastrar Vestido</div>
+    <form id="form-est-vestido" method="POST" action="/estoque/cadastrar" enctype="multipart/form-data">
+      <input type="hidden" name="tipo" value="Vestido">
+      <div class="row2">
+        <div class="campo">
+          <label>Cor</label>
+          <input type="text" name="cor" placeholder="Ex: Vermelho" autocapitalize="words">
+        </div>
+        <div class="campo">
+          <label>Modelo</label>
+          <input type="text" name="modelo" placeholder="Ex: Sereia" autocapitalize="words">
+        </div>
+      </div>
+      <div class="campo">
+        <label>Foto</label>
+        <div class="foto-area" onclick="document.getElementById('foto-input-vestido').click()">
+          <div style="font-size:2rem;">📷</div>
+          <p>Toque para adicionar foto</p>
+          <img id="foto-preview-vestido" class="foto-preview">
+          <input type="file" id="foto-input-vestido" name="foto" accept="image/*" onchange="previewFoto(this,'foto-preview-vestido')">
+        </div>
+      </div>
+      <button type="submit" class="btn-cadastrar">+ Cadastrar Vestido</button>
+    </form>
+  </div>
+
+  <!-- Formulário de cadastro Acessório -->
+  <div class="est-form" id="form-acessorio" style="display:none;">
+    <div class="est-titulo">+ Cadastrar Acessório</div>
+    <form method="POST" action="/estoque/cadastrar">
+      <input type="hidden" name="tipo" value="Acessorio">
+      <div class="campo">
+        <label>Nome / Descrição</label>
+        <input type="text" name="descricao" placeholder="Ex: Tiara dourada, Luvas brancas..." autocapitalize="words">
+      </div>
+      <button type="submit" class="btn-cadastrar">+ Cadastrar Acessório</button>
+    </form>
+  </div>
+
+  <!-- Lista de peças -->
+  <div class="est-lista" id="est-lista">
+    <div class="est-vazio">Carregando...</div>
+  </div>
+
 </div>
+
+<!-- Nav inferior -->
+<nav class="bottomnav">
+  <button class="nav-btn ativo" id="nav-contrato" onclick="mudarTela('contrato')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    Contrato
+  </button>
+  <button class="nav-btn" id="nav-estoque" onclick="mudarTela('estoque')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+    </svg>
+    Estoque
+  </button>
+</nav>
 
 <script>
 let pecasDisponiveis = [];
 let pecasSelecionadas = {};
-const hoje = "{{ hoje }}";
+let abaEstoque = 'Vestido';
 
-// ── Datas ─────────────────────────────────────────────────
+// ── Navegação ─────────────────────────────────────────────
+function mudarTela(tela) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('tela-' + tela).classList.add('ativa');
+  document.getElementById('nav-' + tela).classList.add('ativo');
+  document.getElementById('topbar-sub').textContent =
+    tela === 'contrato' ? 'Novo Contrato' : 'Estoque';
+  if (tela === 'estoque') carregarEstoque();
+}
+
+// ── Estoque ───────────────────────────────────────────────
+function mudarAba(tipo) {
+  abaEstoque = tipo;
+  document.getElementById('tab-vestido').classList.toggle('ativo', tipo === 'Vestido');
+  document.getElementById('tab-acessorio').classList.toggle('ativo', tipo === 'Acessorio');
+  document.getElementById('form-vestido').style.display = tipo === 'Vestido' ? '' : 'none';
+  document.getElementById('form-acessorio').style.display = tipo === 'Acessorio' ? '' : 'none';
+  carregarEstoque();
+}
+
+function carregarEstoque() {
+  const lista = document.getElementById('est-lista');
+  lista.innerHTML = '<div class="est-vazio">Carregando...</div>';
+  fetch('/estoque/disponibilidade?inicio=2000-01-01&fim=2000-01-02')
+    .then(r => r.json())
+    .then(pecas => {
+      const filtradas = pecas.filter(p => p.tipo === abaEstoque);
+      if (!filtradas.length) {
+        lista.innerHTML = '<div class="est-vazio">Nenhum item cadastrado.</div>';
+        return;
+      }
+      lista.innerHTML = filtradas.map(p => {
+        const foto = p.foto_path
+          ? `<div class="est-item-foto"><img src="/static/${p.foto_path}" alt="${p.codigo}"></div>`
+          : `<div class="est-item-foto">${abaEstoque === 'Vestido' ? '👗' : '💎'}</div>`;
+        const nome = p.tipo === 'Vestido'
+          ? [p.cor, p.modelo].filter(Boolean).join(' · ')
+          : (p.descricao || '—');
+        const statusClass = p.livre ? 's-disp' : 's-alug';
+        const statusTxt = p.livre ? '● Disponível' : '● Alugada';
+        return `<div class="est-item">
+          ${foto}
+          <div class="est-item-info">
+            <div class="est-item-cod">${p.codigo}</div>
+            <div class="est-item-nome">${nome}</div>
+            <div class="est-item-status ${statusClass}">${statusTxt}</div>
+          </div>
+        </div>`;
+      }).join('');
+    })
+    .catch(() => {
+      lista.innerHTML = '<div class="est-vazio">Erro ao carregar.</div>';
+    });
+}
+
+function previewFoto(input, previewId) {
+  const preview = document.getElementById(previewId);
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// ── Contrato ──────────────────────────────────────────────
 document.getElementById('data_retirada').addEventListener('change', carregarPecas);
 document.getElementById('data_devolucao').addEventListener('change', carregarPecas);
 
@@ -384,47 +535,36 @@ function carregarPecas() {
     .then(p => { pecasDisponiveis = p; });
 }
 
-// ── Busca de peças ────────────────────────────────────────
 function abrirDrop(tipo) {
-  const input = document.querySelector(`#drop-${tipo}`).previousElementSibling;
-  mostrarOpcoes(tipo, input.value);
+  const drop = document.getElementById('drop-' + tipo);
+  mostrarOpcoes(tipo, drop.previousElementSibling.value);
 }
 
-function buscarPeca(tipo, input) {
-  mostrarOpcoes(tipo, input.value);
-}
+function buscarPeca(tipo, input) { mostrarOpcoes(tipo, input.value); }
 
 function mostrarOpcoes(tipo, texto) {
   const drop = document.getElementById('drop-' + tipo);
   const jaIds = (pecasSelecionadas[tipo] || []).map(p => p.id);
   const t = texto.trim().toLowerCase();
-
   const filtradas = pecasDisponiveis.filter(p =>
     p.tipo === tipo && !jaIds.includes(p.id) &&
-    (t === '' || (p.codigo+' '+p.cor+' '+p.modelo+' '+p.tamanho).toLowerCase().includes(t))
+    (t === '' || (p.codigo+' '+p.cor+' '+p.modelo+' '+p.descricao).toLowerCase().includes(t))
   );
-
   if (!filtradas.length) {
     drop.innerHTML = `<div class="peca-opcao" style="color:#f48fb1;font-size:0.82rem;">
-      ${pecasDisponiveis.length ? 'Nenhuma peça encontrada.' : 'Selecione as datas primeiro.'}
-    </div>`;
-    drop.style.display = 'block';
-    return;
+      ${pecasDisponiveis.length ? 'Nenhuma peça encontrada.' : 'Selecione as datas primeiro.'}</div>`;
+    drop.style.display = 'block'; return;
   }
-
   drop.innerHTML = filtradas.map(p => {
-    const desc = [p.tamanho, p.cor, p.modelo].filter(Boolean).join(' · ');
-    const badge = p.livre
-      ? `<span class="badge-livre">Livre</span>`
-      : `<span class="badge-ocup">Ocupada</span>`;
+    const desc = p.tipo === 'Vestido'
+      ? [p.cor, p.modelo].filter(Boolean).join(' · ')
+      : (p.descricao || '');
+    const badge = p.livre ? `<span class="badge-livre">Livre</span>` : `<span class="badge-ocup">Ocupada</span>`;
     return `<div class="peca-opcao ${!p.livre?'ocupada':''}"
                  onclick="${p.livre ? `selecionarPeca('${tipo}',${p.id},'${p.codigo}','${desc.replace(/'/g,"\\'")}')` : ''}">
-      <div>
-        <span style="color:#e8b84b;font-weight:700;">${p.codigo}</span>
-        <span style="color:#f48fb1;font-size:0.8rem;margin-left:6px;">${desc}</span>
-      </div>
-      ${badge}
-    </div>`;
+      <div><span style="color:#e8b84b;font-weight:700;">${p.codigo}</span>
+        <span style="color:#f48fb1;font-size:0.8rem;margin-left:6px;">${desc}</span></div>
+      ${badge}</div>`;
   }).join('');
   drop.style.display = 'block';
 }
@@ -435,8 +575,7 @@ function selecionarPeca(tipo, id, codigo, desc) {
   pecasSelecionadas[tipo].push({id, codigo, desc});
   renderTags(tipo);
   const drop = document.getElementById('drop-' + tipo);
-  drop.previousElementSibling.value = '';
-  drop.style.display = 'none';
+  drop.previousElementSibling.value = ''; drop.style.display = 'none';
 }
 
 function removerPeca(tipo, id) {
@@ -445,9 +584,8 @@ function removerPeca(tipo, id) {
 }
 
 function renderTags(tipo) {
-  const container = document.getElementById('sel-' + tipo);
-  const sel = pecasSelecionadas[tipo] || [];
-  container.innerHTML = sel.map(p => `
+  const c = document.getElementById('sel-' + tipo);
+  c.innerHTML = (pecasSelecionadas[tipo]||[]).map(p => `
     <div class="peca-tag">
       <input type="hidden" name="pecas_ids" value="${p.id}">
       <span><b>${p.codigo}</b>${p.desc ? ' · ' + p.desc : ''}</span>
@@ -455,47 +593,37 @@ function renderTags(tipo) {
     </div>`).join('');
 }
 
-// ── Forma de pagamento ────────────────────────────────────
 function selecionarForma(btn) {
   document.querySelectorAll('.forma-btn').forEach(b => b.classList.remove('ativo'));
   btn.classList.add('ativo');
   document.getElementById('forma_hidden').value = btn.dataset.val;
 }
 
-// ── Saldo ─────────────────────────────────────────────────
 function calcSaldo() {
   const t = parseFloat(document.getElementById('val_total').value||0);
   const s = parseFloat(document.getElementById('val_sinal').value||0);
-  const saldo = Math.max(0, t - s);
   document.getElementById('txt-saldo').textContent =
-    'Saldo na devolução: R$ ' + saldo.toFixed(2).replace('.',',');
+    'Saldo na devolução: R$ ' + Math.max(0,t-s).toFixed(2).replace('.',',');
 }
 
-// ── Salvar ────────────────────────────────────────────────
 function salvarContrato(acao) {
   const form = document.getElementById('form-app');
-  // Injeta campo acao
   let acaoInput = form.querySelector('[name="acao"]');
   if (!acaoInput) {
     acaoInput = document.createElement('input');
-    acaoInput.type = 'hidden';
-    acaoInput.name = 'acao';
+    acaoInput.type = 'hidden'; acaoInput.name = 'acao';
     form.appendChild(acaoInput);
   }
-  acaoInput.value = acao;
-  form.submit();
+  acaoInput.value = acao; form.submit();
 }
 
-// Fecha dropdown ao tocar fora
-document.addEventListener('touchstart', function(e) {
-  if (!e.target.classList.contains('peca-busca-input')) {
+document.addEventListener('touchstart', e => {
+  if (!e.target.classList.contains('peca-busca-input'))
     document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
-  }
 });
-document.addEventListener('click', function(e) {
-  if (!e.target.classList.contains('peca-busca-input')) {
+document.addEventListener('click', e => {
+  if (!e.target.classList.contains('peca-busca-input'))
     document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
-  }
 });
 </script>
 </body>
