@@ -13,7 +13,7 @@ TW = W - ML - MR
 # Paleta elegante
 DOURADO    = colors.HexColor("#B8962E")
 DOURADO_CLR= colors.HexColor("#D4AF5A")
-ESCURO     = colors.HexColor("#1A1A2E")
+ESCURO     = colors.HexColor("#8b1a4a")
 CINZA_ESC  = colors.HexColor("#333344")
 CINZA_MED  = colors.HexColor("#666677")
 CINZA_CLR  = colors.HexColor("#9999AA")
@@ -113,23 +113,18 @@ def gerar_contrato_pdf(contrato):
     c.setLineWidth(0.3)
     c.line(ML, H - 0.95*cm, W - MR, H - 0.95*cm)
 
-    # Nome da empresa — em duas partes para o efeito tipográfico
-    # "NOBRE VESTIDOS" centralizado, sem sobreposição
-    cx = W / 2
-    c.setFont("Helvetica-Bold", 26)
-    c.setFillColor(BRANCO)
-    # Largura total do texto
-    tw_espaco = c.stringWidth("ESPAÇO ", "Helvetica-Bold", 26)
-    tw_d      = c.stringWidth("D ", "Helvetica-Bold", 26)
-    tw_luxo   = c.stringWidth("LUXO", "Helvetica-Bold", 26)
-    total_w   = tw_espaco + tw_d + tw_luxo
-    x_start   = cx - total_w / 2
+  # Nome da empresa — NOBRE VESTIDOS
+        cx = W / 2
+        c.setFont("Helvetica-Bold", 26)
+        c.setFillColor(BRANCO)
+        tw_nobre  = c.stringWidth("NOBRE ", "Helvetica-Bold", 26)
+        tw_vest   = c.stringWidth("VESTIDOS", "Helvetica-Bold", 26)
+        total_w   = tw_nobre + tw_vest
+        x_start   = cx - total_w / 2
 
-    c.drawString(x_start, H - 1.95*cm, "ESPAÇO ")
-    c.setFillColor(DOURADO_CLR)
-    c.drawString(x_start + tw_espaco, H - 1.95*cm, "D ")
-    c.setFillColor(BRANCO)
-    c.drawString(x_start + tw_espaco + tw_d, H - 1.95*cm, "LUXO")
+        c.drawString(x_start, H - 1.95*cm, "NOBRE ")
+        c.setFillColor(DOURADO_CLR)
+        c.drawString(x_start + tw_nobre, H - 1.95*cm, "VESTIDOS")
 
     # Subtítulo da empresa
     c.setFont("Helvetica", 7.5)
@@ -140,7 +135,7 @@ def gerar_contrato_pdf(contrato):
     # ── Título do contrato ────────────────────────────────────
     c.setFont("Helvetica-Bold", 11)
     c.setFillColor(ESCURO)
-    c.drawCentredString(cx, H - 4.3*cm, "CONTRATO DE LOCAÇÃO DE TRAJE")
+    c.drawCentredString(cx, H - 4.3*cm, ""CONTRATO DE LOCAÇÃO DE VESTIDO"")
 
     # Linha dourada sob o título
     c.setStrokeColor(DOURADO)
