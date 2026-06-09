@@ -134,7 +134,7 @@ def gerar_contrato_pdf(contrato):
     # ── Título do contrato ────────────────────────────────────
     c.setFont("Helvetica-Bold", 11)
     c.setFillColor(ESCURO)
-    c.drawCentredString(cx, H - 4.3*cm, ""CONTRATO DE LOCAÇÃO DE VESTIDO"")
+    c.drawCentredString(cx, H - 4.3*cm, "CONTRATO DE LOCAÇÃO DE VESTIDO")
 
     # Linha dourada sob o título
     c.setStrokeColor(DOURADO)
