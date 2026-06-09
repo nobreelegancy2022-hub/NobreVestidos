@@ -114,18 +114,17 @@ def gerar_contrato_pdf(contrato):
     c.line(ML, H - 0.95*cm, W - MR, H - 0.95*cm)
 
   # Nome da empresa — NOBRE VESTIDOS
-        cx = W / 2
-        c.setFont("Helvetica-Bold", 26)
-        c.setFillColor(BRANCO)
-        tw_nobre  = c.stringWidth("NOBRE ", "Helvetica-Bold", 26)
-        tw_vest   = c.stringWidth("VESTIDOS", "Helvetica-Bold", 26)
-        total_w   = tw_nobre + tw_vest
-        x_start   = cx - total_w / 2
+    cx = W / 2
+    c.setFont("Helvetica-Bold", 26)
+    c.setFillColor(BRANCO)
+    tw_nobre  = c.stringWidth("NOBRE ", "Helvetica-Bold", 26)
+    tw_vest   = c.stringWidth("VESTIDOS", "Helvetica-Bold", 26)
+    total_w   = tw_nobre + tw_vest
+    x_start   = cx - total_w / 2
 
-        c.drawString(x_start, H - 1.95*cm, "NOBRE ")
-        c.setFillColor(DOURADO_CLR)
-        c.drawString(x_start + tw_nobre, H - 1.95*cm, "VESTIDOS")
-
+    c.drawString(x_start, H - 1.95*cm, "NOBRE ")
+    c.setFillColor(DOURADO_CLR)
+    c.drawString(x_start + tw_nobre, H - 1.95*cm, "VESTIDOS")
     # Subtítulo da empresa
     c.setFont("Helvetica", 7.5)
     c.setFillColor(CINZA_CLR)
