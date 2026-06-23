@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Peças Mais Alugadas{% endblock %}
+{% block content %}
+<style>
+  body,.main{background:#1a0812;color:#e0e8f0}
+  h4.pt{font-size:1.4rem;font-weight:700;color:#e0e8f0;margin-bottom:4px}
+  .pt-sub{color:#9a5a7a;font-size:.85rem;margin-bottom:1.2rem}
+
+  .filtros{display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap}
+  .btn-filtro{padding:7px 18px;border-radius:20px;border:1px solid #c2185b;background:transparent;color:#cc8aaa;font-size:.82rem;text-decoration:none;transition:all .15s}
+  .btn-filtro:hover{border-color:#d5588a;color:#e0e8f0}
+  .btn-filtro.ativo{background:#c2185b;color:#e8b84b;border-color:#e8b84b}
+
+  .grid2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:1.2rem}
+  @media(max-width:768px){.grid2{grid-template-columns:1fr}}
+
+  .secao{background:#2a0d1a;border:1px solid #c2185b;border-radius:12px;overflow:hidden}
+  .secao-h{padding:10px 16px;border-bottom:1px solid #c2185b;font-size:.72rem;font-weight:700;color:#e8b84b;text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+
+  /* Ranking */
+  .rank-row{display:grid;grid-template-columns:40px 60px 1fr 120px 80px;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid #3a1020;font-size:.83rem}
+  .rank-row:last-child{border-bottom:none}
+  .rank-row:hover{background:#3a1020}
+  .rank-num{color:#e8b84b;font-weight:800;font-size:1rem;text-align:center}
+  .rank-num.top1{color:#FFD700;font-size:1.3rem}
+  .rank-num.top2{color:#C0C0C0;font-size:1.1rem}
+  .rank-num.top3{color:#CD7F32}
+  .rank-cod{color:#e8b84b;font-weight:600;font-size:.78rem}
+  .rank-info .nome{color:#e0e8f0;font-weight:500}
+  .rank-info .sub{color:#9a5a7a;font-size:.75rem}
+  .rank-barra-bg{background:#1f0a14;border-radius:10px;height:8px;overflow:hidden}
+  .rank-barra{background:linear-gradient(90deg,#1a3a5c,#e8b84b);height:100%;border-radius:10px;transition:width .5s}
+  .rank-total{color:#e8b84b;font-weight:700;text-align:right}
+
+  /* Por tipo */
+  .tipo-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #3a1020;font-size:.83rem}
+  .tipo-item:last-child{border-bottom:none}
+  .tipo-icone{font-size:1.2rem;width:28px;text-align:center}
+  .tipo-nome{flex:1;color:#e0e8f0}
+  .tipo-barra-bg{width:80px;background:#1f0a14;border-radius:10px;height:8px;overflow:hidden}
+  .tipo-barra{background:#d5588a;height:100%;border-radius:10px}
+  .tipo-total{color:#f48fb1;font-weight:700;min-width:30px;text-align:right}
+
+  .vazio{text-align:center;padding:2rem;color:#3a5070;font-size:.88rem}
+</style>
+
+<h4 class="pt">Peças Mais Alugadas</h4>
+<p class="pt-sub">Ranking por frequência de uso no estoque.</p>
+
+<div class="filtros">
+  <a href="?periodo=mes"   class="btn-filtro {% if periodo=='mes' %}ativo{% endif %}">Este mês</a>
+  <a href="?periodo=ano"   class="btn-filtro {% if periodo=='ano' %}ativo{% endif %}">Este ano</a>
+  <a href="?periodo=total" class="btn-filtro {% if periodo=='total' %}ativo{% endif %}">Histórico total</a>
+</div>
+
+<div class="grid2">
+
+  <!-- Ranking principal -->
+  <div class="secao">
+    <div class="secao-h"><i class="bi bi-trophy"></i> Ranking de Peças
+      <span style="margin-left:auto;color:#9a5a7a;font-weight:400;font-size:.7rem;">{{ pecas|length }} peças</span>
+    </div>
+
+    {% if pecas %}
+      {% set max_total = pecas[0][1] %}
+      {% for peca, total in pecas %}
+      <div class="rank-row">
+        <div class="rank-num {{ 'top1' if loop.index==1 else 'top2' if loop.index==2 else 'top3' if loop.index==3 else '' }}">
+          {% if loop.index == 1 %}🥇
+          {% elif loop.index == 2 %}🥈
+          {% elif loop.index == 3 %}🥉
+          {% else %}{{ loop.index }}{% endif %}
+        </div>
+        <div class="rank-cod">{{ peca.codigo }}</div>
+        <div class="rank-info">
+          <div class="nome">{{ peca.cor or '' }} {{ peca.modelo or '' }}</div>
+          <div class="sub">{{ peca.tipo }} · {{ peca.cor or '' }}</div>
+        </div>
+        <div class="rank-barra-bg">
+          <div class="rank-barra" style="width:{{ ((total/max_total)*100)|int }}%"></div>
+        </div>
+        <div class="rank-total">{{ total }}x</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="vazio">Nenhuma peça encontrada para este período.</div>
+    {% endif %}
+  </div>
+
+  <!-- Por tipo -->
+  <div class="secao">
+    <div class="secao-h"><i class="bi bi-pie-chart"></i> Por Tipo</div>
+    {% if por_tipo %}
+      {% set max_tipo = por_tipo.values()|max %}
+      {% set icones = {'Vestido':'👗','Acessorio':'💎'} %}
+      {% for tipo, total in por_tipo.items()|sort(attribute='1',reverse=True) %}
+      <div class="tipo-item">
+        <div class="tipo-icone">{{ icones.get(tipo,'📦') }}</div>
+        <div class="tipo-nome">{{ tipo }}</div>
+        <div class="tipo-barra-bg">
+          <div class="tipo-barra" style="width:{{ ((total/max_tipo)*100)|int }}%"></div>
+        </div>
+        <div class="tipo-total">{{ total }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="vazio">Sem dados.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

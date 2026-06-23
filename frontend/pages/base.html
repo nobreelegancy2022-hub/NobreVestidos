@@ -104,11 +104,19 @@
 <div class="sidebar">
 
   <!-- Marca -->
-  <a class="sidebar-brand" href="{{ url_for('contratos.novo') }}">
+  <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}">
     <div class="nome">NOBRE VESTIDOS</div>
     <span class="sub">Aluguel de Vestidos</span>
     <div class="linha-dourada"></div>
   </a>
+
+  <!-- Dashboard -->
+  <nav class="nav flex-column">
+    <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"
+       href="{{ url_for('dashboard.index') }}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+  </nav>
 
   <!-- Contratos -->
   <span class="sidebar-section">Contratos</span>
@@ -138,6 +146,18 @@
     <a class="nav-link {% if 'contabilidade' in request.endpoint %}active{% endif %}"
        href="{{ url_for('contabilidade.index') }}">
       <i class="bi bi-cash-coin"></i> Contabilidade
+    </a>
+    <a class="nav-link {% if 'financeiro' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('financeiro.index') }}">
+      <i class="bi bi-graph-down"></i> Despesas e Metas
+    </a>
+    <a class="nav-link {% if 'relatorio' in request.endpoint and 'pecas' not in request.endpoint %}active{% endif %}"
+       href="{{ url_for('relatorio.mensal') }}">
+      <i class="bi bi-file-earmark-pdf"></i> Relatório PDF
+    </a>
+    <a class="nav-link {% if 'pecas' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('relatorio.pecas_mais_alugadas') }}">
+      <i class="bi bi-trophy"></i> Peças Mais Alugadas
     </a>
   </nav>
 

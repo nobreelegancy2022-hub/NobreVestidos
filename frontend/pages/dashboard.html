@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Nobre Vestidos{% endblock %}
+{% block content %}
+
+<style>
+  body, .main { background: #1a0812; color: #e0e8f0; }
+
+  .boas_vindas { margin-bottom: 1.8rem; }
+  .boas_vindas h4 { font-size: 1.4rem; font-weight: 700; color: #e0e8f0; margin-bottom: 2px; }
+  .boas_vindas p { font-size: 0.85rem; color: #9a5a7a; margin: 0; }
+
+  /* Cards de métricas */
+  .metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.4rem; }
+  .metrica-card {
+    background: #2a0d1a; border: 1px solid #c2185b; border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+  }
+  .metrica-card .val { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .metrica-card .lbl { font-size: 0.75rem; color: #9a5a7a; text-transform: uppercase; letter-spacing: 0.06em; }
+  .metrica-card .sub { font-size: 0.72rem; color: #3a5070; margin-top: 2px; }
+  .val-azul    { color: #f48fb1; }
+  .val-verde   { color: #4ade80; }
+  .val-amarelo { color: #e8b84b; }
+  .val-vermelho{ color: #f87171; }
+  .val-roxo    { color: #c084fc; }
+
+  /* Alertas de vencimento */
+  .alertas-box {
+    background: #2a0d1a; border: 1px solid #e8b84b; border-radius: 12px;
+    margin-bottom: 1.2rem; overflow: hidden;
+  }
+  .alertas-header {
+    background: #1a1500; padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.78rem; font-weight: 700; color: #e8b84b;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .alerta-row {
+    display: flex; align-items: center; padding: 10px 16px;
+    border-top: 1px solid #1e2a0a; gap: 12px;
+  }
+  .alerta-row:hover { background: #3a1020; }
+  .alerta-urgente { border-left: 3px solid #f87171; }
+  .alerta-atencao { border-left: 3px solid #e8b84b; }
+  .alerta-num { color: #e8b84b; font-weight: 700; font-size: 0.82rem; min-width: 55px; }
+  .alerta-cliente { color: #e0e8f0; font-size: 0.85rem; font-weight: 500; flex: 1; }
+  .alerta-data { font-size: 0.78rem; color: #cc8aaa; min-width: 90px; }
+  .alerta-tel a {
+    color: #4ade80; font-size: 0.78rem; text-decoration: none;
+    background: #0d3321; border-radius: 20px; padding: 3px 10px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .alerta-tel a:hover { background: #0a5025; }
+  .badge-hoje    { background:#3b1111; color:#f87171; font-size:0.65rem; padding:2px 8px; border-radius:20px; font-weight:600; }
+  .badge-amanha  { background:#2d1f00; color:#fbbf24; font-size:0.65rem; padding:2px 8px; border-radius:20px; font-weight:600; }
+  .badge-2dias   { background:#0d2040; color:#f48fb1; font-size:0.65rem; padding:2px 8px; border-radius:20px; font-weight:600; }
+
+  /* Seções inferiores */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.2rem; }
+  @media(max-width:768px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .secao-box {
+    background: #2a0d1a; border: 1px solid #c2185b; border-radius: 12px; overflow: hidden;
+  }
+  .secao-box-header {
+    padding: 10px 16px; border-bottom: 1px solid #c2185b;
+    font-size: 0.72rem; font-weight: 700; color: #e8b84b;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .secao-box-header .ver-mais {
+    margin-left: auto; color: #9a5a7a; font-size: 0.7rem;
+    font-weight: 400; text-decoration: none; text-transform: none; letter-spacing: 0;
+  }
+  .secao-box-header .ver-mais:hover { color: #e0e8f0; }
+
+  .mini-row {
+    display: flex; align-items: center; padding: 9px 16px;
+    border-bottom: 1px solid #3a1020; gap: 10px; font-size: 0.82rem;
+  }
+  .mini-row:last-child { border-bottom: none; }
+  .mini-row:hover { background: #3a1020; }
+  .mini-num { color: #e8b84b; font-weight: 600; font-size: 0.78rem; min-width: 50px; }
+  .mini-nome { color: #e0e8f0; flex: 1; }
+  .mini-info { color: #9a5a7a; font-size: 0.75rem; }
+  .mini-val  { color: #4ade80; font-weight: 600; font-size: 0.82rem; }
+  .mini-saldo-pend { color: #e8b84b; font-weight: 600; font-size: 0.82rem; }
+
+  .vazio-mini { text-align: center; padding: 1.5rem; color: #3a5070; font-size: 0.82rem; }
+
+  /* Gráfico de barras simples */
+  .barra-wrap { padding: 12px 16px; }
+  .barra-item { margin-bottom: 10px; }
+  .barra-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cc8aaa; margin-bottom: 4px; }
+  .barra-bg { background: #1f0a14; border-radius: 20px; height: 8px; overflow: hidden; }
+  .barra-fill { background: #e8b84b; height: 100%; border-radius: 20px; transition: width 0.5s; }
+  .barra-fill.azul { background: #d5588a; }
+</style>
+
+<div class="boas_vindas">
+  <h4>Olá, {{ current_user.nome }}! 👋</h4>
+  <p>{{ hoje.strftime('%A, %d de %B de %Y').replace('Monday','Segunda-feira').replace('Tuesday','Terça-feira').replace('Wednesday','Quarta-feira').replace('Thursday','Quinta-feira').replace('Friday','Sexta-feira').replace('Saturday','Sábado').replace('Sunday','Domingo').replace('January','janeiro').replace('February','fevereiro').replace('March','março').replace('April','abril').replace('May','maio').replace('June','junho').replace('July','julho').replace('August','agosto').replace('September','setembro').replace('October','outubro').replace('November','novembro').replace('December','dezembro') }}</p>
+</div>
+
+<!-- Métricas -->
+<div class="metricas">
+  <div class="metrica-card">
+    <div class="val val-azul">{{ contratos_ativos }}</div>
+    <div class="lbl">Contratos ativos</div>
+  </div>
+  <div class="metrica-card">
+    <div class="val val-vermelho">{{ contratos_atrasados }}</div>
+    <div class="lbl">Em atraso</div>
+  </div>
+  <div class="metrica-card">
+    <div class="val val-amarelo">R$ {{ "%.0f"|format(receita_mes) }}</div>
+    <div class="lbl">Recebido este mês</div>
+    <div class="sub">{{ mes_atual }}</div>
+  </div>
+  <div class="metrica-card">
+    <div class="val val-verde">R$ {{ "%.0f"|format(saldo_aberto) }}</div>
+    <div class="lbl">A receber</div>
+    <div class="sub">contratos ativos</div>
+  </div>
+  <div class="metrica-card">
+    <div class="val val-roxo">{{ saidas_hoje }}</div>
+    <div class="lbl">Saídas hoje</div>
+  </div>
+</div>
+
+<!-- Alertas de vencimento -->
+{% if alertas %}
+<div class="alertas-box">
+  <div class="alertas-header">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Atenção — Devoluções próximas ({{ alertas|length }})
+  </div>
+  {% for a in alertas %}
+  <div class="alerta-row {{ 'alerta-urgente' if a.dias <= 0 else 'alerta-atencao' if a.dias == 1 else '' }}">
+    <div class="alerta-num">#{{ "%04d"|format(a.contrato.id) }}</div>
+    <div class="alerta-cliente">{{ a.contrato.cliente.nome }}</div>
+    <div class="alerta-data">{{ a.contrato.data_devolucao.strftime('%d/%m/%Y') }}</div>
+    <div>
+      {% if a.dias <= 0 %}
+        <span class="badge-hoje">Hoje!</span>
+      {% elif a.dias == 1 %}
+        <span class="badge-amanha">Amanhã</span>
+      {% else %}
+        <span class="badge-2dias">{{ a.dias }} dias</span>
+      {% endif %}
+    </div>
+    {% if a.contrato.cliente.telefone %}
+    <div class="alerta-tel">
+      <a href="https://wa.me/55{{ a.contrato.cliente.telefone|replace('(','') |replace(')','') |replace(' ','') |replace('-','') }}" target="_blank">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+      </a>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Grid inferior -->
+<div class="grid2">
+
+  <!-- Últimos contratos -->
+  <div class="secao-box">
+    <div class="secao-box-header">
+      <i class="bi bi-file-earmark-text"></i> Contratos recentes
+      <a href="{{ url_for('contratos.lista') }}" class="ver-mais">Ver todos →</a>
+    </div>
+    {% for c in contratos_recentes %}
+    <div class="mini-row">
+      <div class="mini-num">#{{ "%04d"|format(c.id) }}</div>
+      <div class="mini-nome">{{ c.cliente.nome.split()[0] }} {{ c.cliente.nome.split()[-1] if c.cliente.nome.split()|length > 1 else '' }}</div>
+      <div class="mini-info">{{ c.data_retirada.strftime('%d/%m') }}</div>
+      {% if c.saldo_restante > 0 %}
+      <div class="mini-saldo-pend">R$ {{ "%.0f"|format(c.saldo_restante) }}</div>
+      {% else %}
+      <div class="mini-val">✓ Quitado</div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="vazio-mini">Nenhum contrato ainda.</div>
+    {% endfor %}
+  </div>
+
+  <!-- Receita por forma de pagamento -->
+  <div class="secao-box">
+    <div class="secao-box-header">
+      <i class="bi bi-cash-coin"></i> Receita do mês por forma
+    </div>
+    <div class="barra-wrap">
+      {% if formas_pagamento %}
+        {% set max_val = formas_pagamento[0].total %}
+        {% for f in formas_pagamento %}
+        <div class="barra-item">
+          <div class="barra-label">
+            <span>{{ f.forma.replace('cartao_credito','Cartão Crédito').replace('cartao_debito','Cartão Débito').replace('pix','PIX').replace('dinheiro','Dinheiro').capitalize() }}</span>
+            <span>R$ {{ "%.2f"|format(f.total) }}</span>
+          </div>
+          <div class="barra-bg">
+            <div class="barra-fill" style="width: {{ ((f.total / max_val) * 100)|int }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <p class="vazio-mini">Sem pagamentos este mês.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

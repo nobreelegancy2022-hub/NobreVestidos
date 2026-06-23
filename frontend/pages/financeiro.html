@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}Financeiro — {{ nome_mes }}/{{ ano }}{% endblock %}
+{% block content %}
+<style>
+  body,.main{background:#1a0812;color:#e0e8f0}
+  h4.pt{font-size:1.4rem;font-weight:700;color:#e0e8f0;margin-bottom:4px}
+  .pt-sub{color:#9a5a7a;font-size:.85rem;margin-bottom:1.2rem}
+
+  /* Nav meses */
+  .nav-mes{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;flex-wrap:wrap}
+  .btn-mes{background:#2a0d1a;border:1px solid #c2185b;color:#cc8aaa;border-radius:20px;padding:6px 16px;font-size:.82rem;text-decoration:none;transition:all .15s}
+  .btn-mes:hover{border-color:#d5588a;color:#e0e8f0}
+  .mes-atual{font-size:1rem;font-weight:700;color:#e8b84b;flex:1;text-align:center}
+
+  /* Cards métricas */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.2rem}
+  .card-m{background:#2a0d1a;border:1px solid #c2185b;border-radius:12px;padding:1.1rem 1.3rem}
+  .card-m .val{font-size:1.6rem;font-weight:800;line-height:1;margin-bottom:3px}
+  .card-m .lbl{font-size:.72rem;color:#9a5a7a;text-transform:uppercase;letter-spacing:.06em}
+  .verde{color:#4ade80} .vermelho{color:#f87171} .amarelo{color:#e8b84b} .azul{color:#60a5fa}
+
+  /* Meta */
+  .meta-box{background:#2a0d1a;border:1px solid #c2185b;border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1.2rem}
+  .meta-titulo{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#e8b84b;margin-bottom:1rem;display:flex;align-items:center;gap:6px;border-bottom:1px solid #c2185b;padding-bottom:.5rem}
+  .barra-meta-bg{background:#1f0a14;border-radius:20px;height:14px;overflow:hidden;margin:8px 0}
+  .barra-meta-fill{background:linear-gradient(90deg,#e8b84b,#4ade80);height:100%;border-radius:20px;transition:width .6s}
+  .meta-form{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .meta-input{background:#1f0a14;border:1px solid #c2185b;color:#e0e8f0;border-radius:8px;padding:8px 12px;font-size:.9rem;width:160px}
+  .meta-input:focus{outline:none;border-color:#e8b84b}
+  .btn-salvar-meta{background:#e8b84b;color:#1a0812;border:none;border-radius:8px;padding:8px 18px;font-weight:700;font-size:.85rem;cursor:pointer}
+  .btn-salvar-meta:hover{background:#d4a43a}
+
+  /* Grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.2rem}
+  @media(max-width:768px){.grid2{grid-template-columns:1fr}}
+
+  /* Secão */
+  .secao{background:#2a0d1a;border:1px solid #c2185b;border-radius:12px;overflow:hidden}
+  .secao-h{padding:10px 16px;border-bottom:1px solid #c2185b;font-size:.72rem;font-weight:700;color:#e8b84b;text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+
+  /* Form nova despesa */
+  .form-desp{padding:14px 16px;display:grid;gap:8px}
+  .form-label-top{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#cc8aaa;margin-bottom:4px;display:block}
+  .form-control,.form-select{background:#1f0a14;border:1px solid #c2185b;color:#e0e8f0;border-radius:8px;padding:8px 12px;font-size:.88rem;width:100%}
+  .form-control:focus,.form-select:focus{outline:none;border-color:#e8b84b}
+  .form-select option{background:#1f0a14}
+  .btn-add{background:#e8b84b;color:#1a0812;border:none;border-radius:8px;padding:9px 20px;font-weight:700;font-size:.85rem;cursor:pointer;width:100%}
+  .btn-add:hover{background:#d4a43a}
+
+  /* Lista despesas */
+  .desp-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid #3a1020;gap:10px;font-size:.83rem}
+  .desp-row:last-child{border-bottom:none}
+  .desp-row:hover{background:#3a1020}
+  .desp-data{color:#9a5a7a;font-size:.75rem;min-width:70px}
+  .desp-desc{flex:1;color:#e0e8f0}
+  .desp-cat{font-size:.68rem;background:#c2185b;color:#cc8aaa;border-radius:20px;padding:2px 8px;white-space:nowrap}
+  .desp-val{color:#f87171;font-weight:600;min-width:80px;text-align:right}
+  .btn-del{background:transparent;border:1px solid #3b1111;color:#f87171;border-radius:6px;padding:2px 8px;font-size:.7rem;cursor:pointer}
+  .btn-del:hover{background:#3b1111}
+  .vazio{text-align:center;padding:1.5rem;color:#3a5070;font-size:.85rem}
+
+  /* Por categoria */
+  .cat-item{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid #3a1020;font-size:.82rem}
+  .cat-item:last-child{border-bottom:none}
+  .cat-nome{flex:1;color:#cc8aaa}
+  .cat-val{color:#f87171;font-weight:600}
+  .cat-barra-bg{width:80px;background:#1f0a14;border-radius:10px;height:6px;overflow:hidden}
+  .cat-barra{background:#f87171;height:100%;border-radius:10px}
+</style>
+
+<h4 class="pt">Financeiro</h4>
+<p class="pt-sub">Controle de receitas, despesas e metas mensais.</p>
+
+<!-- Navegação de meses -->
+<div class="nav-mes">
+  <a href="?mes={{ mes_ant }}&ano={{ ano_ant }}" class="btn-mes">← Anterior</a>
+  <span class="mes-atual">{{ nome_mes }} / {{ ano }}</span>
+  <a href="?mes={{ mes_prox }}&ano={{ ano_prox }}" class="btn-mes">Próximo →</a>
+</div>
+
+<!-- Cards métricas -->
+<div class="cards">
+  <div class="card-m">
+    <div class="val verde">R$ {{ "%.0f"|format(receita_mes) }}</div>
+    <div class="lbl">Receita do mês</div>
+  </div>
+  <div class="card-m">
+    <div class="val vermelho">R$ {{ "%.0f"|format(total_despesas) }}</div>
+    <div class="lbl">Despesas do mês</div>
+  </div>
+  <div class="card-m">
+    <div class="val {{ 'verde' if lucro >= 0 else 'vermelho' }}">R$ {{ "%.0f"|format(lucro) }}</div>
+    <div class="lbl">Lucro líquido</div>
+  </div>
+  <div class="card-m">
+    <div class="val amarelo">{{ progresso }}%</div>
+    <div class="lbl">da meta atingida</div>
+  </div>
+</div>
+
+<!-- Meta mensal -->
+<div class="meta-box">
+  <div class="meta-titulo"><i class="bi bi-bullseye"></i> Meta de Receita — {{ nome_mes }}/{{ ano }}</div>
+  <div style="display:flex;justify-content:space-between;font-size:.82rem;color:#cc8aaa;margin-bottom:4px">
+    <span>R$ {{ "%.2f"|format(receita_mes) }} recebido</span>
+    <span>Meta: R$ {{ "%.2f"|format(meta_valor) }}</span>
+  </div>
+  <div class="barra-meta-bg">
+    <div class="barra-meta-fill" style="width:{{ progresso }}%"></div>
+  </div>
+  <div style="font-size:.75rem;color:{% if progresso >= 100 %}#4ade80{% elif progresso >= 70 %}#e8b84b{% else %}#f87171{% endif %};margin-bottom:10px">
+    {% if progresso >= 100 %}✅ Meta atingida!
+    {% elif meta_valor > 0 %}Faltam R$ {{ "%.2f"|format(meta_valor - receita_mes) }} para a meta
+    {% else %}Meta não definida para este mês{% endif %}
+  </div>
+  <form method="POST" action="{{ url_for('financeiro.salvar_meta') }}" class="meta-form">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <input type="hidden" name="ano" value="{{ ano }}">
+    <div style="display:flex;align-items:center;gap:6px">
+      <label style="font-size:.75rem;color:#9a5a7a;">Definir meta:</label>
+      <input type="number" name="meta_valor" class="meta-input"
+             placeholder="Ex: 5000" step="100" min="0"
+             value="{{ meta_valor if meta_valor > 0 else '' }}">
+    </div>
+    <button type="submit" class="btn-salvar-meta">Salvar Meta</button>
+  </form>
+</div>
+
+<!-- Grid: despesas + categorias -->
+<div class="grid2">
+
+  <!-- Nova despesa -->
+  <div class="secao">
+    <div class="secao-h"><i class="bi bi-plus-circle"></i> Nova Despesa</div>
+    <form method="POST" action="{{ url_for('financeiro.nova_despesa') }}" class="form-desp">
+      <input type="hidden" name="mes" value="{{ mes }}">
+      <input type="hidden" name="ano" value="{{ ano }}">
+      <div>
+        <label class="form-label-top">Descrição</label>
+        <input type="text" name="descricao" class="form-control" placeholder="Ex: Limpeza blazer" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label class="form-label-top">Valor (R$)</label>
+          <input type="number" name="valor" class="form-control" step="0.01" min="0" placeholder="0,00" required>
+        </div>
+        <div>
+          <label class="form-label-top">Data</label>
+          <input type="date" name="data" class="form-control" value="{{ hoje }}">
+        </div>
+      </div>
+      <div>
+        <label class="form-label-top">Categoria</label>
+        <select name="categoria" class="form-select">
+          {% for val, label in categorias %}
+          <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label-top">Observação (opcional)</label>
+        <input type="text" name="observacao" class="form-control" placeholder="Detalhes...">
+      </div>
+      <button type="submit" class="btn-add">+ Registrar Despesa</button>
+    </form>
+  </div>
+
+  <!-- Por categoria -->
+  <div class="secao">
+    <div class="secao-h"><i class="bi bi-pie-chart"></i> Por Categoria</div>
+    {% if por_cat %}
+      {% set max_cat = por_cat.values()|max %}
+      {% set cat_map = dict(categorias) %}
+      {% for cat, val in por_cat.items()|sort(attribute='1', reverse=True) %}
+      <div class="cat-item">
+        <div class="cat-nome">{{ cat_map.get(cat, cat) }}</div>
+        <div class="cat-barra-bg">
+          <div class="cat-barra" style="width:{{ ((val/max_cat)*100)|int }}%"></div>
+        </div>
+        <div class="cat-val">R$ {{ "%.2f"|format(val) }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="vazio">Nenhuma despesa este mês.</div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Lista de despesas -->
+<div class="secao">
+  <div class="secao-h"><i class="bi bi-list-ul"></i> Despesas do Mês
+    <span style="margin-left:auto;color:#9a5a7a;font-weight:400;font-size:.7rem;">
+      {{ despesas|length }} registros · Total: R$ {{ "%.2f"|format(total_despesas) }}
+    </span>
+  </div>
+  {% if despesas %}
+    {% set cat_map = dict(categorias) %}
+    {% for d in despesas %}
+    <div class="desp-row">
+      <div class="desp-data">{{ d.data.strftime('%d/%m') }}</div>
+      <div class="desp-desc">
+        {{ d.descricao }}
+        {% if d.observacao %}<span style="color:#9a5a7a;font-size:.75rem;"> · {{ d.observacao }}</span>{% endif %}
+      </div>
+      <div class="desp-cat">{{ cat_map.get(d.categoria, d.categoria) }}</div>
+      <div class="desp-val">R$ {{ "%.2f"|format(d.valor) }}</div>
+      <form method="POST" action="{{ url_for('financeiro.excluir_despesa', id=d.id) }}"
+            onsubmit="return confirm('Excluir despesa?')">
+        <input type="hidden" name="mes" value="{{ mes }}">
+        <input type="hidden" name="ano" value="{{ ano }}">
+        <button type="submit" class="btn-del">✕</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="vazio">Nenhuma despesa registrada neste mês.</div>
+  {% endif %}
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+// Data padrão = hoje
+document.querySelector('[name="data"]').value = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
