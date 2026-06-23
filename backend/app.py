@@ -10,11 +10,9 @@ def create_app():
     app = Flask(__name__, template_folder="../frontend/pages",
                 static_folder="../frontend/assets", static_url_path="/assets")
 
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "espaco_dluxo_2025_secret")
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "nobre_vestidos_2025_secret")
 
-    # PostgreSQL em produção, SQLite local
     database_url = os.environ.get("DATABASE_URL", "sqlite:///loja.db")
-    # Railway usa postgres://, SQLAlchemy precisa de postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
@@ -26,7 +24,8 @@ def create_app():
     login_manager.login_message = "Faça login para acessar o sistema."
 
     from backend.routers import (auth, estoque, clientes, contratos,
-                                     agenda, contabilidade, consultas, pwa)
+                                  agenda, contabilidade, consultas, pwa,
+                                  dashboard, relatorio, financeiro)
     app.register_blueprint(auth.bp)
     app.register_blueprint(estoque.bp)
     app.register_blueprint(clientes.bp)
@@ -35,6 +34,9 @@ def create_app():
     app.register_blueprint(contabilidade.bp)
     app.register_blueprint(consultas.bp)
     app.register_blueprint(pwa.bp)
+    app.register_blueprint(dashboard.bp)
+    app.register_blueprint(relatorio.bp)
+    app.register_blueprint(financeiro.bp)
 
     with app.app_context():
         db.create_all()
