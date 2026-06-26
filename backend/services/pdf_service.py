@@ -113,7 +113,7 @@ def gerar_contrato_pdf(contrato):
     c.setLineWidth(0.3)
     c.line(ML, H - 0.95*cm, W - MR, H - 0.95*cm)
 
-  # Nome da empresa — NOBRE VESTIDOS
+    # Nome da empresa — "NOBRE VESTIDOS" centralizado com destaque dourado
     cx = W / 2
     c.setFont("Helvetica-Bold", 26)
     c.setFillColor(BRANCO)
@@ -125,6 +125,7 @@ def gerar_contrato_pdf(contrato):
     c.drawString(x_start, H - 1.95*cm, "NOBRE ")
     c.setFillColor(DOURADO_CLR)
     c.drawString(x_start + tw_nobre, H - 1.95*cm, "VESTIDOS")
+
     # Subtítulo da empresa
     c.setFont("Helvetica", 7.5)
     c.setFillColor(CINZA_CLR)
