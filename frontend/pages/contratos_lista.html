@@ -183,9 +183,15 @@
     <!-- Ações -->
     <div class="acoes">
       <a href="#" class="btn-detalhes"
-         onclick="abrirDetalhes({{ c.id }}, '{{ c.cliente.nome }}', '{{ c.data_retirada.strftime('%d/%m/%Y') }}', '{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '-' }}', '{{ c.status }}', '{{ '%.2f'|format(c.valor_total) }}', '{{ '%.2f'|format(c.saldo_restante) }}', `{% for item in c.itens %}{{ item.peca.tipo }} {{ item.peca.cor }} {{ item.peca.tamanho }}{% if not loop.last %} / {% endif %}{% endfor %}`); return false;">
+         onclick="abrirDetalhes({{ c.id }}, '{{ c.cliente.nome }}', '{{ c.data_retirada.strftime('%d/%m/%Y') }}', '{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '-' }}', '{{ c.status }}', '{{ '%.2f'|format(c.valor_total) }}', '{{ '%.2f'|format(c.saldo_restante) }}', `{% for item in c.itens %}{{ item.peca.tipo }} {{ item.peca.cor }}{% if not loop.last %} / {% endif %}{% endfor %}`); return false;">
         Detalhes
       </a>
+      {% if c.cliente.telefone %}
+      <a href="https://wa.me/55{{ c.cliente.telefone|replace('(','') |replace(')','') |replace(' ','') |replace('-','') }}?text={{ ('Olá, ' + c.cliente.nome + '! 😊%0AConfirmando seu aluguel na *Nobre Vestidos*:%0A%0A📅 *Saída:* ' + c.data_retirada.strftime('%d/%m/%Y') + '%0A📅 *Devolução:* ' + (c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '-') + '%0A👗 *Peças:* ' + (c.itens | map(attribute='peca') | list | map(attribute='cor') | list | join(' / ')) + '%0A%0A💰 *Total:* R$ ' + '%.2f'|format(c.valor_total) + ' | *Sinal:* R$ ' + '%.2f'|format(c.valor_pago) + ' | *Saldo:* R$ ' + '%.2f'|format(c.saldo_restante) + '%0A%0AQualquer dúvida estamos à disposição! 💕')|urlencode }}"
+         target="_blank" class="btn-detalhes" style="color:#4ade80;border-color:#0d3321;background:#0d1f0d;">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+      </a>
+      {% endif %}
       <a href="{{ url_for('contratos.pdf', id=c.id) }}" target="_blank" class="btn-contrato">
         <i class="bi bi-file-earmark-text"></i> Contrato
       </a>
