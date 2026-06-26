@@ -155,6 +155,9 @@
     <div class="periodo">
       <span>{{ c.data_retirada.strftime('%d/%m/%Y') }} →</span>
       <span>{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '—' }}</span>
+      {% if c.data_prova %}
+      <span style="color:#e8b84b;font-size:0.72rem;">📅 Prova: {{ c.data_prova.strftime('%d/%m/%Y') }}</span>
+      {% endif %}
     </div>
 
     <!-- Peças resumidas -->
