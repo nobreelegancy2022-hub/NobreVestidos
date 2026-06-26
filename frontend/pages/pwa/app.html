@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#c2185b">
@@ -11,10 +11,14 @@
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     body {
       background: #1a0812; color: #f0d0e0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100dvh; padding-bottom: 72px;
+      min-height: 100%; height: auto;
+      padding-bottom: 80px;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
     }
 
     /* Topo */
@@ -49,7 +53,7 @@
     .nav-btn svg { width: 22px; height: 22px; }
 
     /* Telas */
-    .tela { display: none; padding: 14px; }
+    .tela { display: none; padding: 14px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     .tela.ativa { display: block; }
 
     /* Cards de seção */
@@ -75,7 +79,7 @@
     .campo:last-child { margin-bottom: 0; }
     label { display: block; font-size: 0.68rem; font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.08em; color: #f48fb1; margin-bottom: 5px; }
-    input, select, textarea {
+    input, select, textarea { touch-action: manipulation;
       width: 100%; background: #1f0a14; border: 1px solid #c2185b;
       color: #f0d0e0; border-radius: 10px; padding: 13px 14px;
       font-size: 16px; outline: none; -webkit-appearance: none; appearance: none;
@@ -94,7 +98,7 @@
       letter-spacing: 0.07em; color: #f48fb1; margin-bottom: 6px;
       display: flex; align-items: center; gap: 5px; }
     .peca-busca-wrap { position: relative; margin-bottom: 6px; }
-    .peca-busca-input { width: 100%; background: #1f0a14; border: 1px solid #c2185b;
+    .peca-busca-input { touch-action: manipulation; width: 100%; background: #1f0a14; border: 1px solid #c2185b;
       color: #f0d0e0; border-radius: 10px; padding: 12px 14px;
       font-size: 16px; outline: none; -webkit-appearance: none; }
     .peca-busca-input:focus { border-color: #e8b84b; }
@@ -617,7 +621,7 @@ function salvarContrato(acao) {
   acaoInput.value = acao; form.submit();
 }
 
-document.addEventListener('touchstart', e => {
+document.addEventListener('touchstart', e => { e.stopPropagation();
   if (!e.target.classList.contains('peca-busca-input'))
     document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
 });
