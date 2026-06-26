@@ -11,68 +11,40 @@ bp = Blueprint("agenda", __name__, url_prefix="/agenda")
 @login_required
 def index():
     hoje = date.today()
-    visao = request.args.get("visao", "mes")  # mes | semana
-    mes = int(request.args.get("mes", hoje.month))
-    ano = int(request.args.get("ano", hoje.year))
 
-    # --- VISÃO SEMANA ---
-    if visao == "semana":
-        # Início da semana (segunda-feira)
-        inicio_semana = hoje - timedelta(days=hoje.weekday())
-        fim_semana = inicio_semana + timedelta(days=6)
+    # Período customizado ou padrão (semana atual)
+    inicio_str = request.args.get("inicio", "")
+    fim_str    = request.args.get("fim", "")
+    modo       = request.args.get("modo", "semana")
 
-        contratos_semana = Contrato.query.join(Cliente).filter(
-            Contrato.data_retirada >= inicio_semana,
-            Contrato.data_retirada <= fim_semana,
-            Contrato.status.in_(["ativo", "atrasado"])
-        ).order_by(Contrato.data_retirada).all()
+    if inicio_str and fim_str:
+        try:
+            from datetime import datetime
+            dt_inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
+            dt_fim    = datetime.strptime(fim_str, "%Y-%m-%d").date()
+        except:
+            dt_inicio = hoje - timedelta(days=hoje.weekday())
+            dt_fim    = dt_inicio + timedelta(days=6)
+    elif modo == "hoje":
+        dt_inicio = hoje
+        dt_fim    = hoje
+    elif modo == "amanha":
+        dt_inicio = hoje + timedelta(days=1)
+        dt_fim    = hoje + timedelta(days=1)
+    else:  # semana
+        dt_inicio = hoje - timedelta(days=hoje.weekday())
+        dt_fim    = dt_inicio + timedelta(days=6)
 
-        # Monta dias da semana com contratos
-        dias_semana = []
-        for i in range(7):
-            dia = inicio_semana + timedelta(days=i)
-            cts = [c for c in contratos_semana if c.data_retirada == dia]
-            dias_semana.append({"data": dia, "contratos": cts})
-
-        return render_template("agenda.html",
-                               visao="semana",
-                               dias_semana=dias_semana,
-                               hoje=hoje,
-                               inicio_semana=inicio_semana,
-                               fim_semana=fim_semana,
-                               mes=mes, ano=ano)
-
-    # --- VISÃO MÊS ---
-    primeiro_dia = date(ano, mes, 1)
-    ultimo_dia = date(ano, mes, calendar.monthrange(ano, mes)[1])
-
+    # Busca contratos com saída no período
     contratos = Contrato.query.join(Cliente).filter(
-        Contrato.data_retirada >= primeiro_dia,
-        Contrato.data_retirada <= ultimo_dia,
-        Contrato.status.in_(["ativo", "atrasado"])
-    ).order_by(Contrato.data_retirada).all()
-
-    agenda = {}
-    for c in contratos:
-        dia = c.data_retirada.day
-        if dia not in agenda:
-            agenda[dia] = []
-        agenda[dia].append(c)
-
-    cal = calendar.monthcalendar(ano, mes)
-
-    mes_ant = 12 if mes == 1 else mes - 1
-    ano_ant = ano - 1 if mes == 1 else ano
-    mes_prox = 1 if mes == 12 else mes + 1
-    ano_prox = ano + 1 if mes == 12 else ano
-
-    nomes_mes = ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-                 "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
+        Contrato.data_retirada >= dt_inicio,
+        Contrato.data_retirada <= dt_fim,
+        Contrato.status.in_(["ativo", "atrasado", "devolvido"])
+    ).order_by(Contrato.data_retirada, Cliente.nome).all()
 
     return render_template("agenda.html",
-                           visao="mes",
-                           cal=cal, agenda=agenda,
-                           mes=mes, ano=ano, hoje=hoje,
-                           nome_mes=nomes_mes[mes],
-                           mes_ant=mes_ant, ano_ant=ano_ant,
-                           mes_prox=mes_prox, ano_prox=ano_prox)
+                           contratos=contratos,
+                           dt_inicio=dt_inicio,
+                           dt_fim=dt_fim,
+                           hoje=hoje,
+                           modo=modo)
