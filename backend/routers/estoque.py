@@ -147,7 +147,7 @@ def disponibilidade():
     dt_inicio = datetime.strptime(inicio, "%Y-%m-%d").date()
     dt_fim    = datetime.strptime(fim,    "%Y-%m-%d").date()
 
-    pecas = Peca.query.filter_by(status="disponivel").all()
+    pecas = Peca.query.filter(Peca.status.in_(["disponivel", "alugada"])).all()
     resultado = []
     for p in pecas:
         livre = p.disponivel_no_periodo(dt_inicio, dt_fim)
