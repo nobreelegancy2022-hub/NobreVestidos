@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Agenda de Saídas{% endblock %}
+{% block title %}Agenda{% endblock %}
 {% block content %}
 
 <style>
@@ -40,13 +40,29 @@
     padding: 8px 18px; border-radius: 20px; border: none;
     background: #0d4a1a; color: #4ade80; font-size: 0.82rem;
     cursor: pointer; display: flex; align-items: center; gap: 6px;
-    transition: all 0.15s;
   }
   .btn-imprimir:hover { background: #0a3a14; }
 
+  /* Abas */
+  .abas { display: flex; gap: 0; margin-bottom: 0; }
+  .aba-btn {
+    padding: 10px 28px; border: 1px solid #c2185b; border-bottom: none;
+    background: #fde8f0; color: #c2185b; font-size: 0.85rem; font-weight: 600;
+    text-decoration: none; border-radius: 10px 10px 0 0; transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .aba-btn:first-child { margin-right: 4px; }
+  .aba-btn:hover { background: #fce0ec; }
+  .aba-btn.ativa { background: #fff0f5; color: #e8b84b; border-color: #c2185b; }
+  .aba-count {
+    background: #c2185b; color: #fff; border-radius: 20px;
+    padding: 1px 8px; font-size: 0.72rem; font-weight: 700;
+  }
+  .aba-btn.ativa .aba-count { background: #e8b84b; color: #1a0812; }
+
   .agenda-box {
     background: #fff0f5; border: 1px solid #c2185b;
-    border-radius: 12px; overflow: hidden;
+    border-radius: 0 12px 12px 12px; overflow: hidden;
   }
   .agenda-titulo-bloco {
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
@@ -56,14 +72,14 @@
   }
   .agenda-header {
     display: grid;
-    grid-template-columns: 70px 90px 90px 160px 1fr 100px 90px 90px;
+    grid-template-columns: 70px 100px 180px 1fr 110px 90px 90px;
     padding: 8px 16px; border-bottom: 1px solid #c2185b;
     font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
     text-transform: uppercase; color: #c2185b;
   }
   .agenda-row {
     display: grid;
-    grid-template-columns: 70px 90px 90px 160px 1fr 100px 90px 90px;
+    grid-template-columns: 70px 100px 180px 1fr 110px 90px 90px;
     padding: 12px 16px; border-bottom: 1px solid #fde0ec;
     align-items: center; transition: background 0.1s;
   }
@@ -71,10 +87,9 @@
   .agenda-row:hover { background: #fde0ec; }
 
   .num { color: #e8b84b; font-weight: 700; font-size: 0.85rem; }
-  .data-saida { font-size: 0.82rem; color: #2a0d1a; }
-  .data-saida.hoje-row { color: #4ade80; font-weight: 600; }
-  .data-prova-col { font-size: 0.78rem; color: #e8b84b; font-weight: 600; }
-  .data-prova-col.vazia { color: #c2185b; opacity: 0.4; }
+  .data-col { font-size: 0.82rem; color: #2a0d1a; }
+  .data-col.hoje-row { color: #4ade80; font-weight: 600; }
+  .data-col.prova-col { color: #e8b84b; font-weight: 600; }
   .cliente-nm { font-size: 0.85rem; color: #2a0d1a; font-weight: 500; }
   .pecas-txt { font-size: 0.75rem; color: #9a5a7a; line-height: 1.5; }
   .data-dev { font-size: 0.78rem; color: #c2185b; }
@@ -86,31 +101,31 @@
   .vazio { text-align: center; padding: 3rem; color: #c2185b; font-size: 0.9rem; opacity: 0.6; }
 
   @media print {
-    .sidebar, .periodo-box, .btns-atalho, .no-print { display: none !important; }
+    .sidebar, .periodo-box, .btns-atalho, .abas, .no-print { display: none !important; }
     .main { margin-left: 0 !important; }
     body { background: white !important; color: black !important; }
-    .agenda-box { border: 1px solid #ccc !important; }
-    .agenda-header, .agenda-row { color: black !important; }
+    .agenda-box { border: 1px solid #ccc !important; border-radius: 0 !important; }
     .num { color: #b8860b !important; }
   }
 </style>
 
-<h4 class="page-titulo">Agenda de Saídas</h4>
-<p class="page-sub">Veja quais contratos têm saída no período selecionado.</p>
+<h4 class="page-titulo">Agenda</h4>
+<p class="page-sub">Gerencie saídas e provas de vestidos no período selecionado.</p>
 
 <!-- Período -->
 <div class="periodo-box no-print">
   <div class="periodo-titulo"><i class="bi bi-calendar-range"></i> Período</div>
   <form method="GET" id="form-periodo">
+    <input type="hidden" name="aba" value="{{ aba }}">
     <div class="row g-3">
       <div class="col-md-4">
         <label class="form-label-top">Data Inicial</label>
-        <input type="date" name="inicio" id="dt-inicio" class="form-control"
+        <input type="date" name="inicio" class="form-control"
                value="{{ dt_inicio.strftime('%Y-%m-%d') }}">
       </div>
       <div class="col-md-4">
         <label class="form-label-top">Data Final</label>
-        <input type="date" name="fim" id="dt-fim" class="form-control"
+        <input type="date" name="fim" class="form-control"
                value="{{ dt_fim.strftime('%Y-%m-%d') }}">
       </div>
       <div class="col-md-4 d-flex align-items-end">
@@ -120,63 +135,69 @@
       </div>
     </div>
   </form>
-
   <div class="btns-atalho">
-    <a href="{{ url_for('agenda.index', modo='semana') }}"
+    <a href="{{ url_for('agenda.index', modo='semana', aba=aba) }}"
        class="btn-atalho {% if modo == 'semana' %}ativo{% endif %}">
       <i class="bi bi-calendar-week"></i> Semana atual
     </a>
-    <a href="{{ url_for('agenda.index', modo='hoje') }}"
+    <a href="{{ url_for('agenda.index', modo='hoje', aba=aba) }}"
        class="btn-atalho {% if modo == 'hoje' %}ativo{% endif %}">
       <i class="bi bi-calendar-day"></i> Hoje
     </a>
-    <a href="{{ url_for('agenda.index', modo='amanha') }}"
+    <a href="{{ url_for('agenda.index', modo='amanha', aba=aba) }}"
        class="btn-atalho {% if modo == 'amanha' %}ativo{% endif %}">
       <i class="bi bi-calendar2-plus"></i> Amanhã
     </a>
     <button onclick="window.print()" class="btn-imprimir">
-      <i class="bi bi-printer"></i> Imprimir Agenda
+      <i class="bi bi-printer"></i> Imprimir
     </button>
   </div>
 </div>
 
+<!-- Abas -->
+<div class="abas no-print">
+  <a href="{{ url_for('agenda.index', modo=modo, aba='saidas', inicio=dt_inicio.strftime('%Y-%m-%d'), fim=dt_fim.strftime('%Y-%m-%d')) }}"
+     class="aba-btn {% if aba == 'saidas' %}ativa{% endif %}">
+    <i class="bi bi-box-arrow-up-right"></i> Agenda de Saídas
+    <span class="aba-count">{{ contratos_saida|length }}</span>
+  </a>
+  <a href="{{ url_for('agenda.index', modo=modo, aba='provas', inicio=dt_inicio.strftime('%Y-%m-%d'), fim=dt_fim.strftime('%Y-%m-%d')) }}"
+     class="aba-btn {% if aba == 'provas' %}ativa{% endif %}">
+    <i class="bi bi-scissors"></i> Agenda de Provas
+    <span class="aba-count">{{ contratos_prova|length }}</span>
+  </a>
+</div>
+
 <!-- Tabela -->
 <div class="agenda-box">
+
+  {% if aba == 'saidas' %}
+  <!-- ABA SAÍDAS -->
   <div class="agenda-titulo-bloco">
-    <i class="bi bi-calendar3"></i> Saídas no Período
+    <i class="bi bi-box-arrow-up-right"></i> Saídas no Período
     <span style="margin-left:auto; color:#c2185b; font-weight:400; font-size:0.7rem;">
-      {{ dt_inicio.strftime('%d/%m/%Y') }}
-      {% if dt_inicio != dt_fim %} até {{ dt_fim.strftime('%d/%m/%Y') }}{% endif %}
-      — {{ contratos|length }} contrato(s)
+      {{ dt_inicio.strftime('%d/%m/%Y') }}{% if dt_inicio != dt_fim %} até {{ dt_fim.strftime('%d/%m/%Y') }}{% endif %}
+      — {{ contratos_saida|length }} contrato(s)
     </span>
   </div>
 
-  {% if contratos %}
+  {% if contratos_saida %}
   <div class="agenda-header">
-    <span>Nº</span>
-    <span>Saída</span>
-    <span>📅 Prova</span>
-    <span>Cliente</span>
-    <span>Peças</span>
-    <span>Devolução</span>
+    <span>Nº</span><span>Saída</span><span>Cliente</span>
+    <span>Peças</span><span>Devolução</span>
     <span style="text-align:right;">Valor</span>
     <span style="text-align:right;">Saldo</span>
   </div>
-
-  {% for c in contratos %}
+  {% for c in contratos_saida %}
   {% set pecas_txt = [] %}
   {% for item in c.itens %}
     {% set desc = [item.peca.cor, item.peca.modelo]|select|join(' - ') %}
     {% if desc %}{% set _ = pecas_txt.append(desc) %}{% endif %}
   {% endfor %}
-
   <div class="agenda-row">
     <div class="num">#{{ "%04d"|format(c.id) }}</div>
-    <div class="data-saida {% if c.data_retirada == hoje %}hoje-row{% endif %}">
+    <div class="data-col {% if c.data_retirada == hoje %}hoje-row{% endif %}">
       {{ c.data_retirada.strftime('%d/%m/%Y') }}
-    </div>
-    <div class="data-prova-col {% if not c.data_prova %}vazia{% endif %}">
-      {% if c.data_prova %}{{ c.data_prova.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
     </div>
     <div class="cliente-nm">{{ c.cliente.nome }}</div>
     <div class="pecas-txt">{{ pecas_txt|join(' / ') or '—' }}</div>
@@ -187,13 +208,57 @@
     </div>
   </div>
   {% endfor %}
-
   {% else %}
   <div class="vazio">
-    <i class="bi bi-calendar-x" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+    <i class="bi bi-calendar-x" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
     Nenhuma saída encontrada neste período.
   </div>
   {% endif %}
-</div>
 
+  {% else %}
+  <!-- ABA PROVAS -->
+  <div class="agenda-titulo-bloco">
+    <i class="bi bi-scissors"></i> Provas no Período
+    <span style="margin-left:auto; color:#c2185b; font-weight:400; font-size:0.7rem;">
+      {{ dt_inicio.strftime('%d/%m/%Y') }}{% if dt_inicio != dt_fim %} até {{ dt_fim.strftime('%d/%m/%Y') }}{% endif %}
+      — {{ contratos_prova|length }} prova(s)
+    </span>
+  </div>
+
+  {% if contratos_prova %}
+  <div class="agenda-header">
+    <span>Nº</span><span>📅 Prova</span><span>Cliente</span>
+    <span>Peças</span><span>Saída</span>
+    <span style="text-align:right;">Valor</span>
+    <span style="text-align:right;">Saldo</span>
+  </div>
+  {% for c in contratos_prova %}
+  {% set pecas_txt = [] %}
+  {% for item in c.itens %}
+    {% set desc = [item.peca.cor, item.peca.modelo]|select|join(' - ') %}
+    {% if desc %}{% set _ = pecas_txt.append(desc) %}{% endif %}
+  {% endfor %}
+  <div class="agenda-row">
+    <div class="num">#{{ "%04d"|format(c.id) }}</div>
+    <div class="data-col prova-col {% if c.data_prova == hoje %}hoje-row{% endif %}">
+      {{ c.data_prova.strftime('%d/%m/%Y') }}
+    </div>
+    <div class="cliente-nm">{{ c.cliente.nome }}</div>
+    <div class="pecas-txt">{{ pecas_txt|join(' / ') or '—' }}</div>
+    <div class="data-dev">{{ c.data_retirada.strftime('%d/%m/%Y') }}</div>
+    <div class="valor-txt">R$ {{ "%.2f"|format(c.valor_total) }}</div>
+    <div class="saldo-txt {% if c.saldo_restante > 0 %}saldo-pend{% else %}saldo-ok{% endif %}">
+      R$ {{ "%.2f"|format(c.saldo_restante) }}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="vazio">
+    <i class="bi bi-scissors" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>
+    Nenhuma prova agendada neste período.
+  </div>
+  {% endif %}
+  {% endif %}
+
+</div>
 {% endblock %}
