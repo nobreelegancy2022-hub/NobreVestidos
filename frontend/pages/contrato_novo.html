@@ -27,13 +27,6 @@
   }
   .form-control::placeholder { color: #a06070; }
   .form-select option { background: #fde8f0; }
-
-  /* Busca de peças */
-  .tipo-label {
-    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.07em; color: #c2185b; margin: 14px 0 6px;
-    display: flex; align-items: center; gap: 6px;
-  }
   .peca-busca-wrap { position: relative; margin-bottom: 6px; }
   .peca-busca-input {
     background: #fde8f0; border: 1px solid #c2185b; color: #2a0d1a;
@@ -42,7 +35,11 @@
   }
   .peca-busca-input:focus { outline: none; border-color: #f06292; }
   .peca-busca-input::placeholder { color: #a06070; }
-
+  .tipo-label {
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #c2185b; margin: 14px 0 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
   .peca-dropdown {
     position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
     background: #fff0f5; border: 1px solid #f06292; border-top: none;
@@ -54,64 +51,95 @@
     transition: background 0.1s;
   }
   .peca-opcao:last-child { border-bottom: none; }
-  .peca-opcao:hover { background: #44102c; }
+  .peca-opcao:hover { background: #fce0ec; }
   .peca-opcao.ocupada { opacity: 0.45; cursor: not-allowed; }
   .badge-livre { background:#0d3321; color:#4ade80; font-size:0.65rem; padding:2px 9px; border-radius:20px; white-space:nowrap; }
   .badge-ocup  { background:#3d1525; color:#f87171; font-size:0.65rem; padding:2px 9px; border-radius:20px; white-space:nowrap; }
-
-  .pecas-selecionadas {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 32px;
-  }
+  .pecas-selecionadas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 32px; }
   .peca-tag {
-    background: #421020; border: 1px solid #f06292; border-radius: 20px;
+    background: #fde0ec; border: 1px solid #f06292; border-radius: 20px;
     padding: 4px 10px 4px 12px; font-size: 0.78rem; color: #2a0d1a;
     display: flex; align-items: center; gap: 6px;
   }
-  .peca-tag button {
-    background: none; border: none; color: #f87171; font-size: 0.9rem;
-    cursor: pointer; padding: 0; line-height: 1;
-  }
-  .peca-tag button:hover { color: #fff; }
-
+  .peca-tag button { background: none; border: none; color: #f87171; font-size: 0.9rem; cursor: pointer; padding: 0; line-height: 1; }
   .saldo-box {
     background: #fde8f0; border: 1px solid #c2185b; border-radius: 8px;
     padding: 12px 16px; display: flex; align-items: center; gap: 8px;
     color: #e8b84b; font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;
   }
-
   .btn-salvar-pdf {
-    background: #e8b84b; color: #f8e8ef; border: none;
+    background: #e8b84b; color: #1a0812; border: none;
     border-radius: 25px; padding: 10px 26px; font-weight: 700; font-size: 0.9rem;
   }
-  .btn-salvar-pdf:hover { background: #d4a43a; color: #f8e8ef; }
+  .btn-salvar-pdf:hover { background: #d4a43a; color: #1a0812; }
   .btn-salvar {
     background: #c2185b; color: #fff; border: 1px solid #e91e8c;
     border-radius: 25px; padding: 10px 26px; font-weight: 700; font-size: 0.9rem;
   }
   .btn-salvar:hover { background: #d81b60; color: #fff; }
-
   .aviso-data {
     background: #fde8f0; border: 1px solid #c2185b; border-radius: 8px;
     padding: 10px 14px; display: flex; align-items: center; gap: 8px;
     color: #c2185b; font-size: 0.83rem; margin-bottom: 10px;
   }
+  .label-prova { color: #e8b84b !important; }
+  .input-prova { border-color: #e8b84b !important; }
 </style>
 
-<h4 class="fw-bold mb-1" style="color:#e0e8f0; font-size:1.4rem;">Novo Contrato de Aluguel</h4>
-<p style="color:#f48fb1; font-size:0.85rem; margin-bottom:1.4rem;">Preencha os dados abaixo.</p>
+<h4 class="fw-bold mb-1" style="color:#2a0d1a; font-size:1.4rem;">Novo Contrato de Aluguel</h4>
+<p style="color:#c2185b; font-size:0.85rem; margin-bottom:1.4rem;">Preencha os dados abaixo.</p>
 
 <form method="POST" id="form-contrato">
 
 <!-- 1. PERÍODO -->
 <div class="secao">
   <div class="secao-titulo"><i class="bi bi-calendar3"></i> 1. Período do Aluguel</div>
-  <div class="row g-3">
+
+  <!-- Linha 1: Prova + Horário Prova -->
+  <div class="row g-3 mb-3">
     <div class="col-md-6">
+      <label class="form-label-top label-prova">📅 Data da Prova</label>
+      <input type="date" name="data_prova" id="data_prova"
+             class="form-control input-prova" min="{{ hoje }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label-top label-prova">🕐 Horário da Prova</label>
+      <select name="horario_prova" class="form-select input-prova">
+        <option value="">— Sem horário —</option>
+        <option value="09:00">09:00</option>
+        <option value="10:00">10:00</option>
+        <option value="11:00">11:00</option>
+        <option value="12:00">12:00</option>
+        <option value="13:00">13:00</option>
+        <option value="14:00">14:00</option>
+        <option value="15:00">15:00</option>
+        <option value="16:00">16:00</option>
+        <option value="17:00">17:00</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Linha 2: Saída + Horário Saída + Devolução -->
+  <div class="row g-3">
+    <div class="col-md-4">
       <label class="form-label-top">Data de Saída</label>
       <input type="date" name="data_retirada" id="data_retirada"
              class="form-control" required min="{{ hoje }}">
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
+      <label class="form-label-top">🕐 Horário de Saída</label>
+      <select name="horario_saida" class="form-select">
+        <option value="">— Sem horário —</option>
+        <option value="12:00">12:00</option>
+        <option value="13:00">13:00</option>
+        <option value="14:00">14:00</option>
+        <option value="15:00">15:00</option>
+        <option value="16:00">16:00</option>
+        <option value="17:00">17:00</option>
+        <option value="18:00">18:00</option>
+      </select>
+    </div>
+    <div class="col-md-4">
       <label class="form-label-top">Data de Devolução</label>
       <input type="date" name="data_devolucao" id="data_devolucao"
              class="form-control" required min="{{ hoje }}">
@@ -130,13 +158,11 @@
 
   <div class="aviso-data" id="aviso-estoque" style="display:none; border-color:#3d1525;">
     <i class="bi bi-exclamation-triangle" style="color:#f87171;"></i>
-    <span style="color:#f87171;">Nenhuma peça cadastrada no estoque ainda. Vá em <b>Estoque</b> e cadastre os itens antes de criar um contrato.</span>
+    <span style="color:#f87171;">Nenhuma peça cadastrada no estoque ainda.</span>
   </div>
 
   <div id="area-pecas" style="display:none;">
-    {% for tipo, icone, label in [
-      ('Vestido','👗','Vestido'),('Acessorio','💎','Acessório')
-    ] %}
+    {% for tipo, icone, label in [('Vestido','👗','Vestido'),('Acessorio','💎','Acessório')] %}
     <div class="tipo-label">{{ icone }} {{ label }}</div>
     <div class="peca-busca-wrap">
       <input type="text" class="peca-busca-input"
@@ -156,8 +182,7 @@
   <div class="secao-titulo"><i class="bi bi-person"></i> 3. Dados do Cliente</div>
   <div class="mb-3">
     <label class="form-label-top">Nome Completo</label>
-    <input type="text" name="cliente_nome" class="form-control"
-           placeholder="Nome completo da cliente">
+    <input type="text" name="cliente_nome" class="form-control" placeholder="Nome completo da cliente">
   </div>
   <div class="row g-3 mb-3">
     <div class="col-md-6">
@@ -248,7 +273,7 @@
   <div>
     <label class="form-label-top">Observações / Tipo de Evento</label>
     <textarea name="observacoes" class="form-control" rows="3"
-              placeholder="Ex: Casamento, debutante, aniversário, observações gerais..."></textarea>
+              placeholder="Ex: Casamento, debutante, aniversário..."></textarea>
   </div>
 </div>
 
@@ -282,10 +307,8 @@ function carregarPecas() {
   const ini = document.getElementById('data_retirada').value;
   const fim = document.getElementById('data_devolucao').value;
   if (!ini || !fim) return;
-
   document.getElementById('aviso-data').style.display = 'none';
   document.getElementById('area-pecas').style.display = '';
-
   fetch(`/estoque/disponibilidade?inicio=${ini}&fim=${fim}`)
     .then(r => r.json())
     .then(pecas => {
@@ -296,53 +319,34 @@ function carregarPecas() {
         document.getElementById('aviso-estoque').style.display = 'none';
       }
     })
-    .catch(() => {
-      document.getElementById('aviso-estoque').style.display = 'flex';
-    });
+    .catch(() => { document.getElementById('aviso-estoque').style.display = 'flex'; });
 }
 
 function buscarPeca(tipo, input) {
   const texto = input.value.trim().toLowerCase();
   const drop = document.getElementById('drop-' + tipo);
-
   if (!pecasDisponiveis.length) {
-    drop.innerHTML = '<div class="peca-opcao" style="color:#f48fb1;">Selecione as datas primeiro.</div>';
-    drop.style.display = 'block';
-    return;
+    drop.innerHTML = '<div class="peca-opcao" style="color:#c2185b;">Selecione as datas primeiro.</div>';
+    drop.style.display = 'block'; return;
   }
-
   const jaSelIds = (pecasSelecionadas[tipo] || []).map(p => p.id);
   const filtradas = pecasDisponiveis.filter(p =>
-    p.tipo === tipo &&
-    !jaSelIds.includes(p.id) &&
-    (texto === '' || (p.codigo + ' ' + p.cor + ' ' + p.modelo + ' ' + p.descricao)
-      .toLowerCase().includes(texto))
+    p.tipo === tipo && !jaSelIds.includes(p.id) &&
+    (texto === '' || (p.codigo + ' ' + p.cor + ' ' + p.modelo + ' ' + p.descricao).toLowerCase().includes(texto))
   );
-
   if (!filtradas.length) {
-    drop.innerHTML = '<div class="peca-opcao" style="color:#f48fb1; font-size:0.82rem;">Nenhum item encontrado.</div>';
-    drop.style.display = 'block';
-    return;
+    drop.innerHTML = '<div class="peca-opcao" style="color:#c2185b; font-size:0.82rem;">Nenhum item encontrado.</div>';
+    drop.style.display = 'block'; return;
   }
-
   drop.innerHTML = filtradas.map(p => {
-    let desc = '';
-    if (p.tipo === 'Vestido') {
-      desc = [p.cor, p.modelo].filter(Boolean).join(' - ');
-    } else {
-      desc = p.descricao || '';
-    }
-    const badge = p.livre
-      ? `<span class="badge-livre">Livre</span>`
-      : `<span class="badge-ocup">Ocupada</span>`;
+    let desc = p.tipo === 'Vestido' ? [p.cor, p.modelo].filter(Boolean).join(' - ') : (p.descricao || '');
+    const badge = p.livre ? `<span class="badge-livre">Livre</span>` : `<span class="badge-ocup">Ocupada</span>`;
     return `<div class="peca-opcao ${!p.livre ? 'ocupada' : ''}"
                  onclick="${p.livre ? `selecionarPeca('${tipo}', ${p.id}, '${p.codigo}', '${desc.replace(/'/g,"\\'")}')` : ''}">
       <span>
         <span style="color:#e8b84b;font-weight:600;font-size:0.84rem;">${p.codigo}</span>
-        <span style="color:#f48fb1;font-size:0.8rem;margin-left:8px;">${desc}</span>
-      </span>
-      ${badge}
-    </div>`;
+        <span style="color:#c2185b;font-size:0.8rem;margin-left:8px;">${desc}</span>
+      </span>${badge}</div>`;
   }).join('');
   drop.style.display = 'block';
 }
@@ -375,14 +379,12 @@ function renderizarSelecionadas(tipo) {
       <input type="hidden" name="pecas_ids" value="${p.id}">
       <span><b>${p.codigo}</b> ${p.desc ? '· ' + p.desc : ''}</span>
       <button type="button" onclick="removerPeca('${tipo}', ${p.id})" title="Remover">×</button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 document.addEventListener('click', function(e) {
-  if (!e.target.classList.contains('peca-busca-input')) {
+  if (!e.target.classList.contains('peca-busca-input'))
     document.querySelectorAll('.peca-dropdown').forEach(d => d.style.display = 'none');
-  }
 });
 
 document.getElementById('data_retirada').addEventListener('change', carregarPecas);
