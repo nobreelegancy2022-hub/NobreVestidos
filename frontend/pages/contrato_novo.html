@@ -107,16 +107,16 @@
   <div class="secao-titulo"><i class="bi bi-calendar3"></i> 1. Período do Aluguel</div>
   <div class="row g-3">
     <div class="col-md-4">
-      <label class="form-label-top">Data de Saída</label>
-      <input type="date" name="data_retirada" id="data_retirada"
-             class="form-control" required min="{{ hoje }}">
-    </div>
-    <div class="col-md-4">
       <label class="form-label-top">📅 Data da Prova</label>
       <input type="date" name="data_prova" id="data_prova"
              class="form-control" min="{{ hoje }}"
              style="border-color:#e8b84b;">
       <div style="font-size:0.68rem;color:#e8b84b;margin-top:4px;">Prova do vestido</div>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label-top">Data de Saída</label>
+      <input type="date" name="data_retirada" id="data_retirada"
+             class="form-control" required min="{{ hoje }}">
     </div>
     <div class="col-md-4">
       <label class="form-label-top">Data de Devolução</label>
