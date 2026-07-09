@@ -17,8 +17,6 @@ def novo():
         pecas_ids = request.form.getlist("pecas_ids")
         dt_retirada = datetime.strptime(request.form["data_retirada"], "%Y-%m-%d").date()
         dt_devolucao = datetime.strptime(request.form["data_devolucao"], "%Y-%m-%d").date()
-        dt_prova_str = request.form.get("data_prova", "").strip()
-        dt_prova = datetime.strptime(dt_prova_str, "%Y-%m-%d").date() if dt_prova_str else None
 
         if dt_retirada < date.today():
             flash("A data de saída não pode ser anterior à data de hoje.", "danger")
@@ -84,7 +82,6 @@ def novo():
             usuario_id=current_user.id,
             data_retirada=dt_retirada,
             data_devolucao=dt_devolucao,
-            data_prova=dt_prova,
             valor_sinal=valor_sinal,
             observacoes=obs_completa
         )
