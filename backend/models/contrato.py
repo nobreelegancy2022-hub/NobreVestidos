@@ -9,7 +9,6 @@ class Contrato(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"))
     data_retirada = db.Column(db.Date, nullable=False)
     data_devolucao = db.Column(db.Date, nullable=False)
-    data_prova = db.Column(db.Date)  # Data da prova do vestido
     data_devolucao_real = db.Column(db.Date)
     valor_total = db.Column(db.Float, default=0.0)
     valor_sinal = db.Column(db.Float, default=0.0)
