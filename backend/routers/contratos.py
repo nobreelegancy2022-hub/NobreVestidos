@@ -296,6 +296,17 @@ def alterar_status(id):
 
 
 
+
+
+@bp.route("/<int:id>/ajuste", methods=["POST"])
+@login_required
+def toggle_ajuste(id):
+    from flask import jsonify
+    contrato = Contrato.query.get_or_404(id)
+    contrato.ajuste_pronto = not contrato.ajuste_pronto
+    db.session.commit()
+    return jsonify({"ajuste_pronto": contrato.ajuste_pronto})
+
 @bp.route("/<int:id>/whatsapp")
 @login_required
 def whatsapp(id):
