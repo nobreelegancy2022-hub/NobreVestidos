@@ -8,6 +8,33 @@ from backend.services.pdf_service import gerar_contrato_pdf, nome_arquivo_contra
 from datetime import datetime, date
 import io
 
+
+
+def _link_lembrete_retirada(contrato):
+    """Retorna (link_whatsapp, horario) para lembrete de retirada."""
+    import urllib.parse
+    if not contrato.cliente.telefone:
+        return None, None
+    tel = contrato.cliente.telefone
+    for ch in ["(",")"," ","-"]: tel = tel.replace(ch, "")
+    horario = getattr(contrato, 'horario_saida', None)
+    saida = contrato.data_retirada.strftime("%d/%m/%Y")
+    if horario:
+        saida += f" às {horario}"
+    nome = contrato.cliente.nome
+    pecas = " / ".join(
+        " ".join(filter(None, [i.peca.cor, i.peca.modelo]))
+        for i in contrato.itens
+    )
+    msg = (f"Olá, {nome}! 😊\n\n"
+           f"Passando para lembrar que o seu vestido está agendado para retirada em:\n"
+           f"📅 *{saida}*\n\n"
+           f"👗 *Peças:* {pecas}\n\n"
+           f"Qualquer dúvida estamos à disposição! 💕\n"
+           f"_Equipe Nobre Vestidos_ 🌸")
+    link = f"https://wa.me/55{tel}?text={urllib.parse.quote(msg)}"
+    return link, horario
+
 bp = Blueprint("contratos", __name__, url_prefix="/contratos")
 
 @bp.route("/novo", methods=["GET", "POST"])
