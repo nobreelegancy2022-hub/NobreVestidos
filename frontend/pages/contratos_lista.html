@@ -32,6 +32,75 @@ Qualquer dúvida estamos à disposição! 💕`;
   window.open(url, '_blank');
 }
 </script>
+
+<!-- Banner fallback WhatsApp agradecimento -->
+<div class="whats-banner" id="whats-banner">
+  <button class="whats-banner-fechar" onclick="fecharBanner()">×</button>
+  <div class="whats-banner-txt">
+    <strong>Enviar agradecimento</strong><br>
+    O pop-up foi bloqueado. Clique para abrir o WhatsApp.
+  </div>
+  <button class="whats-banner-btn" id="whats-banner-btn" onclick="abrirLinkWhats()">
+    <i class="bi bi-whatsapp"></i> Enviar
+  </button>
+</div>
+
+<script>
+let _whatsUrlAgradecimento = null;
+
+// Intercept mudança de status para devolvido
+function verificarDevolucao(sel) {
+  const contratoId = parseInt(sel.dataset.contratoId);
+  if (sel.value === 'devolvido') {
+    setTimeout(() => dispararAgradecimento(contratoId), 800);
+  }
+  sel.form.submit();
+}
+
+function dispararAgradecimento(contratoId) {
+  const d = dadosContratos[contratoId];
+  if (!d || !d.tel || d.tel === '55') {
+    mostrarAviso('Cliente sem telefone cadastrado — agradecimento não enviado.');
+    return;
+  }
+  const msg = `Olá, ${d.nome}! 😊
+
+Obrigada por escolher a *Nobre Vestidos*! 💕
+
+Foi um prazer atendê-la. Esperamos que tenha arrasado no visual! 👗✨
+
+Qualquer dúvida ou para um próximo aluguel, estamos sempre à disposição!
+
+_Equipe Nobre Vestidos_ 🌸`;
+  _whatsUrlAgradecimento = `https://wa.me/${d.tel}?text=${encodeURIComponent(msg)}`;
+
+  const popup = window.open(_whatsUrlAgradecimento, '_blank');
+  if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+    // Pop-up bloqueado — mostrar banner
+    document.getElementById('whats-banner').classList.add('visivel');
+  }
+}
+
+function abrirLinkWhats() {
+  if (_whatsUrlAgradecimento) {
+    window.open(_whatsUrlAgradecimento, '_blank');
+    fecharBanner();
+  }
+}
+
+function fecharBanner() {
+  document.getElementById('whats-banner').classList.remove('visivel');
+}
+
+function mostrarAviso(msg) {
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#3a1020;border:1px solid #f87171;border-radius:10px;padding:12px 18px;color:#f87171;font-size:0.84rem;';
+  div.textContent = msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 4000);
+}
+</script>
+
 {% endblock %}
 {% block content %}
 
@@ -139,6 +208,29 @@ Qualquer dúvida estamos à disposição! 💕`;
   .select-ativo option, .select-devolvido option,
   .select-atrasado option, .select-cancelado option { background:#fff0f5; color:#e0e8f0; }
   .vazio { text-align: center; padding: 3rem; color: #a06070; font-size: 0.9rem; }
+
+  /* Banner de agradecimento WhatsApp */
+  .whats-banner {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: #0d4a1a; border: 1px solid #4ade80; border-radius: 14px;
+    padding: 14px 18px; display: none; align-items: center; gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4); max-width: 340px;
+  }
+  .whats-banner.visivel { display: flex; }
+  .whats-banner-txt { color: #e0f0e0; font-size: 0.82rem; line-height: 1.4; }
+  .whats-banner-txt strong { color: #4ade80; }
+  .whats-banner-btn {
+    background: #25D366; color: #fff; border: none; border-radius: 10px;
+    padding: 8px 14px; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .whats-banner-btn:hover { background: #1ebe5d; }
+  .whats-banner-fechar {
+    position: absolute; top: 6px; right: 8px;
+    background: none; border: none; color: #4ade80;
+    font-size: 1rem; cursor: pointer; line-height: 1;
+  }
 </style>
 
 <h4 class="page-titulo">Contratos</h4>
@@ -207,7 +299,8 @@ Qualquer dúvida estamos à disposição! 💕`;
     <div>
       <form method="POST" action="/contratos/{{ c.id }}/status">
         <select name="status" class="select-status select-{{ c.status }}"
-                onchange="this.form.submit()">
+                data-contrato-id="{{ c.id }}"
+                onchange="verificarDevolucao(this)">
           <option value="ativo"     {% if c.status == 'ativo' %}selected{% endif %}>Ativo</option>
           <option value="atrasado"  {% if c.status == 'atrasado' %}selected{% endif %}>Atrasado</option>
           <option value="devolvido" {% if c.status == 'devolvido' %}selected{% endif %}>Devolvido</option>
