@@ -22,19 +22,27 @@
   const params = new URLSearchParams(window.location.search);
   const waLink = params.get('wa_link');
   if (!waLink) return;
+
+  // Limpa da URL imediatamente
   params.delete('wa_link');
   const novaUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
   window.history.replaceState({}, '', novaUrl);
-  const janela = window.open(waLink, '_blank');
-  if (!janela || janela.closed || typeof janela.closed === 'undefined') {
-    mostrarBannerWA(waLink);
-  }
+
+  // Decodifica o link
+  const link = decodeURIComponent(waLink);
+
+  // Mostra banner para o usuário clicar (navegadores bloqueiam popup sem gesto)
+  mostrarBannerWA(link);
+
   function mostrarBannerWA(link) {
     const banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#2a0d1a;border:1px solid #25D366;border-radius:12px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.4);color:#f0d0e0;max-width:300px;';
+    banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#2a0d1a;border:2px solid #25D366;border-radius:12px;padding:16px 18px;box-shadow:0 4px 24px rgba(0,0,0,0.5);color:#f0d0e0;max-width:310px;';
     banner.innerHTML =
-      '<div style="font-size:0.85rem;margin-bottom:8px;">📱 Mensagem de agradecimento pronta! Seu navegador bloqueou a abertura automática.</div>' +
-      '<a href="' + link + '" target="_blank" style="display:block;text-align:center;background:#25D366;color:#fff;text-decoration:none;padding:8px;border-radius:8px;font-size:0.85rem;font-weight:600;"><i class="bi bi-whatsapp"></i> Enviar agradecimento</a>';
+      '<div style="font-size:0.88rem;margin-bottom:10px;line-height:1.4;">💕 <strong style="color:#f48fb1;">Contrato devolvido!</strong><br>Clique para enviar mensagem de agradecimento.</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<a href="' + link + '" target="_blank" style="flex:1;text-align:center;background:#25D366;color:#fff;text-decoration:none;padding:9px;border-radius:8px;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="bi bi-whatsapp"></i> Enviar</a>' +
+      '<button onclick="this.parentElement.parentElement.remove()" style="background:#3a1020;border:1px solid #c2185b;color:#f48fb1;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:0.82rem;">Fechar</button>' +
+      '</div>';
     document.body.appendChild(banner);
   }
 })();
