@@ -264,7 +264,7 @@ def alterar_status(id):
                    f"_Equipe Nobre Vestidos_ 🌸")
             import urllib.parse
             wa_link = f"https://wa.me/55{tel}?text={urllib.parse.quote(msg)}"
-            return redirect(url_for("contratos.lista") + f"?wa_link={urllib.parse.quote(wa_link)}")
+            return redirect(url_for("contratos.lista", wa_link=urllib.parse.quote(wa_link, safe="")))
     return redirect(url_for("contratos.lista"))
 
 
