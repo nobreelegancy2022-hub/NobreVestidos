@@ -1,7 +1,7 @@
 import os
-from flask import Flask
+from flask import Flask, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -25,7 +25,7 @@ def create_app():
 
     from backend.routers import (auth, estoque, clientes, contratos,
                                   agenda, contabilidade, consultas, pwa,
-                                  dashboard, relatorio, financeiro)
+                                  dashboard, relatorio, financeiro, ajustes)
     app.register_blueprint(auth.bp)
     app.register_blueprint(estoque.bp)
     app.register_blueprint(clientes.bp)
@@ -37,12 +37,28 @@ def create_app():
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(relatorio.bp)
     app.register_blueprint(financeiro.bp)
+    app.register_blueprint(ajustes.bp)
+
+    # Controle de acesso: usuário nível ajuste só acessa /ajustes/
+    @app.before_request
+    def restringir_ajuste():
+        if not current_user.is_authenticated:
+            return
+        if not current_user.is_ajuste:
+            return
+        # Rotas permitidas para ajuste
+        permitidas = ("ajustes.", "auth.logout", "static")
+        endpoint = request.endpoint or ""
+        if not any(endpoint.startswith(p) for p in permitidas):
+            return redirect(url_for("ajustes.index"))
 
     with app.app_context():
         db.create_all()
         _garantir_usuario_isaac()
+        _garantir_usuario_ajuste()
 
     return app
+
 
 def _garantir_usuario_isaac():
     from backend.models.usuario import Usuario
@@ -50,13 +66,21 @@ def _garantir_usuario_isaac():
     if isaac:
         isaac.set_senha("753951")
         isaac.nome = "Isaac"
+        isaac.nivel = "admin"
         isaac.ativo = True
         db.session.commit()
     else:
-        for u in Usuario.query.all():
-            if u.email != "Isaac":
-                db.session.delete(u)
-        novo = Usuario(nome="Isaac", email="Isaac")
+        novo = Usuario(nome="Isaac", email="Isaac", nivel="admin")
         novo.set_senha("753951")
+        db.session.add(novo)
+        db.session.commit()
+
+
+def _garantir_usuario_ajuste():
+    from backend.models.usuario import Usuario
+    u = Usuario.query.filter_by(email="ajustes").first()
+    if not u:
+        novo = Usuario(nome="Ajustes", email="ajustes", nivel="ajuste")
+        novo.set_senha("ajustes123")
         db.session.add(novo)
         db.session.commit()
