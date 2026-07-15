@@ -1,21 +1,221 @@
 {% extends "base.html" %}
-{% block title %}Contratos
+{% block title %}Contratos{% endblock %}
+{% block content %}
 
+<style>
+  body, .main { background: #f8e8ef; color: #2a0d1a; }
+  h4.page-titulo { font-size: 1.5rem; font-weight: 700; color: #2a0d1a; margin-bottom: 2px; }
+  .page-sub { font-size: 0.85rem; color: #c2185b; margin-bottom: 1.2rem; }
 
-<!-- Banner fallback WhatsApp agradecimento -->
-<div class="whats-banner" id="whats-banner">
-  <button class="whats-banner-fechar" onclick="fecharBanner()">×</button>
-  <div class="whats-banner-txt">
-    <strong>Enviar agradecimento</strong><br>
-    O pop-up foi bloqueado. Clique para abrir o WhatsApp.
-  </div>
-  <button class="whats-banner-btn" id="whats-banner-btn" onclick="abrirLinkWhats()">
-    <i class="bi bi-whatsapp"></i> Enviar
-  </button>
+  .busca-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+  .busca-label { font-size: 0.8rem; font-weight: 600; color: #c2185b; display: flex; align-items: center; gap: 5px; }
+  .busca-input {
+    background: #fde8f0; border: 1px solid #c2185b; color: #2a0d1a;
+    border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; width: 220px;
+  }
+  .busca-input:focus { outline: none; border-color: #f06292; }
+  .busca-input::placeholder { color: #a06070; }
+
+  .filtros { display: flex; gap: 8px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .filtro-btn {
+    padding: 5px 18px; border-radius: 20px; border: 1px solid #c2185b;
+    background: transparent; color: #c2185b; font-size: 0.82rem; cursor: pointer;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .filtro-btn:hover { border-color: #f06292; color: #2a0d1a; }
+  .filtro-btn.ativo { background: #c2185b; color: #fff; border-color: #e8b84b; }
+
+  .contratos-box {
+    background: #fff0f5; border: 1px solid #c2185b; border-radius: 12px; overflow: hidden;
+  }
+  .contratos-header {
+    display: grid;
+    grid-template-columns: 70px 180px 140px 1fr 80px 80px 110px 160px;
+    padding: 12px 16px; border-bottom: 1px solid #c2185b;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #c2185b;
+  }
+  .contrato-row {
+    display: grid;
+    grid-template-columns: 70px 180px 140px 1fr 80px 80px 110px 160px;
+    padding: 14px 16px; border-bottom: 1px solid #fde0ec;
+    align-items: start; transition: background 0.1s;
+  }
+  .contrato-row:last-child { border-bottom: none; }
+  .contrato-row:hover { background: #fde0ec; }
+
+  .num { color: #e8b84b; font-weight: 700; font-size: 0.88rem; }
+  .cliente-nome { color: #2a0d1a; font-size: 0.88rem; }
+  .periodo { font-size: 0.8rem; color: #c2185b; line-height: 1.5; }
+  .periodo span { display: block; }
+  .pecas-resumo { font-size: 0.78rem; color: #9a5a7a; line-height: 1.5; }
+  .valor { font-size: 0.88rem; color: #2a0d1a; }
+
+  .badge-ativo     { background: #fde8f0; color: #c2185b; border: 1px solid #c2185b; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .badge-devolvido { background: #0d3321; color: #4ade80; border: 1px solid #1a5c33; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .badge-atrasado  { background: #3b1111; color: #f87171; border: 1px solid #6b2020; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; }
+  .badge-cancelado { background: #f0e8f0; color: #9a7a9a; border: 1px solid #c2a0c2; border-radius: 20px; padding: 3px 12px; font-size: 0.75rem; font-weight: 600; }
+
+  .acoes { display: flex; flex-direction: column; gap: 5px; }
+  .btn-detalhes {
+    background: transparent; border: 1px solid #c2185b; color: #c2185b;
+    border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer;
+    text-decoration: none; text-align: center; transition: all 0.15s;
+  }
+  .btn-detalhes:hover { border-color: #f06292; color: #2a0d1a; }
+  .btn-contrato {
+    background: #c2185b; border: 1px solid #e91e8c; color: #fff;
+    border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer;
+    text-decoration: none; text-align: center; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .btn-contrato:hover { background: #d81b60; color: #fff; }
+  .btn-excluir {
+    background: transparent; border: 1px solid #f87171; color: #f87171;
+    border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer;
+    text-align: center; transition: all 0.15s; width: 100%;
+  }
+  .btn-excluir:hover { background: #3b1111; }
+
+  .modal-content { background: #fff0f5; border: 1px solid #c2185b; color: #2a0d1a; border-radius: 12px; }
+  .modal-header { border-bottom: 1px solid #c2185b; }
+  .modal-footer { border-top: 1px solid #c2185b; }
+  .modal-title { color: #e8b84b; }
+  .detalhe-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #c2185b; }
+  .detalhe-val { color: #2a0d1a; font-size: 0.88rem; margin-bottom: 8px; }
+
+  .select-status {
+    border: none; border-radius: 20px; padding: 4px 10px;
+    font-size: 0.75rem; font-weight: 600; cursor: pointer;
+    outline: none; -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='currentColor' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;
+  }
+  .select-ativo     { background-color:#fde8f0; color:#c2185b; }
+  .select-devolvido { background-color:#0d3321; color:#4ade80; }
+  .select-atrasado  { background-color:#3b1111; color:#f87171; }
+  .select-cancelado { background-color:#f0e8f0; color:#9a7a9a; }
+  .select-ativo option, .select-devolvido option,
+  .select-atrasado option, .select-cancelado option { background:#fff0f5; color:#2a0d1a; }
+
+  .vazio { text-align: center; padding: 3rem; color: #c2185b; font-size: 0.9rem; opacity: 0.6; }
+</style>
+
+<h4 class="page-titulo">Contratos</h4>
+<p class="page-sub">Use a busca para encontrar uma cliente rapidamente.</p>
+
+<form method="GET" class="busca-wrap">
+  <span class="busca-label"><i class="bi bi-search"></i> BUSCAR:</span>
+  <input type="text" name="busca" class="busca-input"
+         placeholder="Nome da cliente..." value="{{ busca }}" autocomplete="off">
+  <input type="hidden" name="status" value="{{ filtro_status }}">
+</form>
+
+<div class="filtros">
+  {% for val, label in [('','Todos'),('ativo','Ativo'),('atrasado','Atrasado'),('devolvido','Devolvido'),('cancelado','Cancelado')] %}
+  <a href="?status={{ val }}&busca={{ busca }}"
+     class="filtro-btn {% if filtro_status == val %}ativo{% endif %}">{{ label }}</a>
+  {% endfor %}
 </div>
 
+<div class="contratos-box">
+  <div class="contratos-header">
+    <span>Nº</span><span>Cliente</span><span>Período</span><span>Peças</span>
+    <span>Valor</span><span>Saldo</span><span>Status</span><span>Ações</span>
+  </div>
 
+  {% for c in contratos %}
+  <div class="contrato-row">
 
+    <div class="num">#{{ "%04d"|format(c.id) }}</div>
+    <div class="cliente-nome">{{ c.cliente.nome }}</div>
+
+    <div class="periodo">
+      <span>{{ c.data_retirada.strftime('%d/%m/%Y') }} →</span>
+      <span>{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '—' }}</span>
+      {% if c.data_prova %}
+      <span style="color:#e8b84b;font-size:0.72rem;">📅 {{ c.data_prova.strftime('%d/%m/%Y') }}</span>
+      {% endif %}
+    </div>
+
+    <div class="pecas-resumo">
+      {% for item in c.itens %}
+        {{ item.peca.cor or '' }}{% if item.peca.modelo %} - {{ item.peca.modelo }}{% endif %}{% if not loop.last %} / {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="valor">{{ "%.2f"|format(c.valor_total) }}</div>
+    <div class="valor {% if c.saldo_restante > 0 %}text-warning{% else %}text-success{% endif %}">
+      {{ "%.2f"|format(c.saldo_restante) }}
+    </div>
+
+    <div>
+      <form method="POST" action="/contratos/{{ c.id }}/status">
+        <select name="status" class="select-status select-{{ c.status }}"
+                onchange="this.form.submit()">
+          <option value="ativo"     {% if c.status == 'ativo' %}selected{% endif %}>Ativo</option>
+          <option value="atrasado"  {% if c.status == 'atrasado' %}selected{% endif %}>Atrasado</option>
+          <option value="devolvido" {% if c.status == 'devolvido' %}selected{% endif %}>Devolvido</option>
+          <option value="cancelado" {% if c.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="acoes">
+      <a href="#" class="btn-detalhes"
+         onclick="abrirDetalhes({{ c.id }}, '{{ c.cliente.nome }}', '{{ c.data_retirada.strftime('%d/%m/%Y') }}', '{{ c.data_devolucao.strftime('%d/%m/%Y') if c.data_devolucao else '-' }}', '{{ c.status }}', '{{ '%.2f'|format(c.valor_total) }}', '{{ '%.2f'|format(c.saldo_restante) }}', `{% for item in c.itens %}{{ item.peca.cor }}{% if item.peca.modelo %} - {{ item.peca.modelo }}{% endif %}{% if not loop.last %} / {% endif %}{% endfor %}`); return false;">
+        Detalhes
+      </a>
+      {% if c.cliente.telefone %}
+      <a href="#" onclick="enviarWA({{ c.id }}, event)"
+         class="btn-detalhes" style="color:#4ade80;border-color:#0d3321;background:#0d1f0d;">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+      </a>
+      {% endif %}
+      <a href="{{ url_for('contratos.pdf', id=c.id) }}" target="_blank" class="btn-contrato">
+        <i class="bi bi-file-earmark-text"></i> Contrato
+      </a>
+      <form method="POST" action="{{ url_for('contratos.excluir', id=c.id) }}"
+            onsubmit="return confirm('Excluir contrato #{{ '%04d'|format(c.id) }}? Esta ação não pode ser desfeita.')">
+        <button type="submit" class="btn-excluir">Excluir</button>
+      </form>
+    </div>
+
+  </div>
+  {% else %}
+  <div class="vazio">Nenhum contrato encontrado.</div>
+  {% endfor %}
+</div>
+
+<!-- Modal Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i>Detalhes do Contrato</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6"><div class="detalhe-label">Cliente</div><div class="detalhe-val" id="d-cliente"></div></div>
+          <div class="col-6"><div class="detalhe-label">Status</div><div class="detalhe-val" id="d-status"></div></div>
+          <div class="col-6"><div class="detalhe-label">Retirada</div><div class="detalhe-val" id="d-retirada"></div></div>
+          <div class="col-6"><div class="detalhe-label">Devolução</div><div class="detalhe-val" id="d-devolucao"></div></div>
+          <div class="col-6"><div class="detalhe-label">Valor Total</div><div class="detalhe-val" id="d-valor"></div></div>
+          <div class="col-6"><div class="detalhe-label">Saldo Restante</div><div class="detalhe-val" id="d-saldo"></div></div>
+          <div class="col-12"><div class="detalhe-label">Peças</div><div class="detalhe-val" id="d-pecas"></div></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
 // Agradecimento automático ao marcar como devolvido
 (function () {
@@ -23,29 +223,35 @@
   const waLink = params.get('wa_link');
   if (!waLink) return;
 
-  // Limpa da URL imediatamente
   params.delete('wa_link');
   const novaUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
   window.history.replaceState({}, '', novaUrl);
 
-  // Decodifica o link
   const link = decodeURIComponent(waLink);
-
-  // Mostra banner para o usuário clicar (navegadores bloqueiam popup sem gesto)
-  mostrarBannerWA(link);
-
-  function mostrarBannerWA(link) {
-    const banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#2a0d1a;border:2px solid #25D366;border-radius:12px;padding:16px 18px;box-shadow:0 4px 24px rgba(0,0,0,0.5);color:#f0d0e0;max-width:310px;';
-    banner.innerHTML =
-      '<div style="font-size:0.88rem;margin-bottom:10px;line-height:1.4;">💕 <strong style="color:#f48fb1;">Contrato devolvido!</strong><br>Clique para enviar mensagem de agradecimento.</div>' +
-      '<div style="display:flex;gap:8px;">' +
-      '<a href="' + link + '" target="_blank" style="flex:1;text-align:center;background:#25D366;color:#fff;text-decoration:none;padding:9px;border-radius:8px;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="bi bi-whatsapp"></i> Enviar</a>' +
-      '<button onclick="this.parentElement.parentElement.remove()" style="background:#3a1020;border:1px solid #c2185b;color:#f48fb1;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:0.82rem;">Fechar</button>' +
-      '</div>';
-    document.body.appendChild(banner);
-  }
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#2a0d1a;border:2px solid #25D366;border-radius:12px;padding:16px 18px;box-shadow:0 4px 24px rgba(0,0,0,0.5);color:#f0d0e0;max-width:310px;';
+  banner.innerHTML =
+    '<div style="font-size:0.88rem;margin-bottom:10px;line-height:1.4;">💕 <strong style="color:#f48fb1;">Contrato devolvido!</strong><br>Clique para enviar mensagem de agradecimento.</div>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<a href="' + link + '" target="_blank" style="flex:1;text-align:center;background:#25D366;color:#fff;text-decoration:none;padding:9px;border-radius:8px;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="bi bi-whatsapp"></i> Enviar</a>' +
+    '<button onclick="this.parentElement.parentElement.remove()" style="background:#3a1020;border:1px solid #c2185b;color:#f48fb1;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:0.82rem;">Fechar</button>' +
+    '</div>';
+  document.body.appendChild(banner);
 })();
+</script>
+
+<script>
+function abrirDetalhes(id, cliente, retirada, devolucao, status, valor, saldo, pecas) {
+  document.getElementById('d-cliente').textContent   = cliente;
+  document.getElementById('d-retirada').textContent  = retirada;
+  document.getElementById('d-devolucao').textContent = devolucao;
+  document.getElementById('d-valor').textContent     = 'R$ ' + valor;
+  document.getElementById('d-saldo').textContent     = 'R$ ' + saldo;
+  document.getElementById('d-pecas').textContent     = pecas;
+  const statusMap = {'ativo':'Ativo','devolvido':'Devolvido','atrasado':'Atrasado','cancelado':'Cancelado'};
+  document.getElementById('d-status').textContent = statusMap[status] || status;
+  new bootstrap.Modal(document.getElementById('modalDetalhes')).show();
+}
 </script>
 
 <script>
@@ -57,5 +263,4 @@ async function enviarWA(id, e) {
   else alert('Cliente sem telefone cadastrado.');
 }
 </script>
-
 {% endblock %}
