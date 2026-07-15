@@ -52,9 +52,11 @@ let _whatsUrlAgradecimento = null;
 function verificarDevolucao(sel) {
   const contratoId = parseInt(sel.dataset.contratoId);
   if (sel.value === 'devolvido') {
-    setTimeout(() => dispararAgradecimento(contratoId), 800);
+    dispararAgradecimento(contratoId);
+    setTimeout(() => sel.form.submit(), 1000);
+  } else {
+    sel.form.submit();
   }
-  sel.form.submit();
 }
 
 function dispararAgradecimento(contratoId) {
