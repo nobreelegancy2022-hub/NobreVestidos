@@ -252,7 +252,52 @@ def alterar_status(id):
         contrato.status = novo_status
         db.session.commit()
         flash(f"Status atualizado para {novo_status.capitalize()}!", "success")
+        # Se devolvido e tem telefone, monta link WhatsApp
+        if novo_status == "devolvido" and contrato.cliente.telefone:
+            tel = contrato.cliente.telefone
+            for ch in ["(",")"," ","-"]: tel = tel.replace(ch, "")
+            nome = contrato.cliente.nome
+            msg = (f"Olá, {nome}! 😊\n\n"
+                   f"Obrigada por escolher a *Nobre Vestidos*! 💕\n"
+                   f"Foi um prazer atendê-la. Esperamos que tenha arrasado no visual! 👗✨\n\n"
+                   f"Qualquer dúvida ou para um próximo aluguel, estamos sempre à disposição!\n\n"
+                   f"_Equipe Nobre Vestidos_ 🌸")
+            import urllib.parse
+            wa_link = f"https://wa.me/55{tel}?text={urllib.parse.quote(msg)}"
+            return redirect(url_for("contratos.lista") + f"?wa_link={urllib.parse.quote(wa_link)}")
     return redirect(url_for("contratos.lista"))
+
+
+
+@bp.route("/<int:id>/whatsapp")
+@login_required
+def whatsapp(id):
+    from flask import jsonify
+    import urllib.parse
+    contrato = Contrato.query.get_or_404(id)
+    if not contrato.cliente.telefone:
+        return jsonify({"link": None})
+    tel = contrato.cliente.telefone
+    for ch in ["(",")"," ","-"]: tel = tel.replace(ch, "")
+    pecas = " / ".join(
+        " ".join(filter(None, [i.peca.cor, i.peca.modelo]))
+        for i in contrato.itens
+    )
+    nome = contrato.cliente.nome
+    saida = contrato.data_retirada.strftime("%d/%m/%Y")
+    devolucao = contrato.data_devolucao.strftime("%d/%m/%Y") if contrato.data_devolucao else "-"
+    total = f"R$ {contrato.valor_total:.2f}"
+    sinal = f"R$ {contrato.valor_pago:.2f}"
+    saldo = f"R$ {contrato.saldo_restante:.2f}"
+    msg = (f"Olá, {nome}! 😊\n"
+           f"Confirmando seu aluguel na *Nobre Vestidos*:\n\n"
+           f"📅 *Saída:* {saida}\n"
+           f"📅 *Devolução:* {devolucao}\n"
+           f"👗 *Peças:* {pecas}\n\n"
+           f"💰 *Total:* {total} | *Sinal:* {sinal} | *Saldo:* {saldo}\n\n"
+           f"Qualquer dúvida estamos à disposição! 💕")
+    link = f"https://wa.me/55{tel}?text={urllib.parse.quote(msg)}"
+    return jsonify({"link": link})
 
 @bp.route("/<int:id>/pdf")
 @login_required
