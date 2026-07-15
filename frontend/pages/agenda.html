@@ -203,12 +203,11 @@
       R$ {{ "%.2f"|format(c.saldo_restante) }}
     </div>
     <div style="text-align:center;">
-      <button onclick="toggleAjuste({{ c.id }}, this)"
-              data-pronto="{{ 'true' if c.ajuste_pronto else 'false' }}"
-              style="border:none;background:none;cursor:pointer;font-size:1.1rem;"
-              title="{{ 'Ajuste pronto' if c.ajuste_pronto else 'Ajuste pendente' }}">
+      <a href="{{ url_for('contratos.toggle_ajuste', id=c.id) }}"
+         style="text-decoration:none;font-size:1.2rem;"
+         title="{{ 'Ajuste pronto — clique para desfazer' if c.ajuste_pronto else 'Pendente — clique para marcar pronto' }}">
         {{ '✅' if c.ajuste_pronto else '⏳' }}
-      </button>
+      </a>
     </div>
   </div>
   {% endfor %}
@@ -266,16 +265,3 @@
 
 </div>
 {% endblock %}
-
-<script>
-function toggleAjuste(id, btn) {
-  fetch('/contratos/' + id + '/ajuste', {method: 'POST'})
-  .then(r => r.json())
-  .then(d => {
-    btn.textContent = d.ajuste_pronto ? '✅' : '⏳';
-    btn.title = d.ajuste_pronto ? 'Ajuste pronto' : 'Ajuste pendente';
-    btn.dataset.pronto = d.ajuste_pronto;
-  })
-  .catch(() => alert('Erro ao atualizar ajuste.'));
-}
-</script>
