@@ -14,10 +14,13 @@ def load_user(user_id):
 def login():
     if request.method == "POST":
         login_input = request.form.get("email", "").strip()
-        senha = request.form.get("senha", "")
-        usuario = Usuario.query.filter_by(email=login_input, ativo=True).first()
+        senha       = request.form.get("senha", "")
+        usuario     = Usuario.query.filter_by(email=login_input, ativo=True).first()
         if usuario and usuario.verificar_senha(senha):
             login_user(usuario, remember=True)
+            # Usuário de ajuste vai direto para /ajustes/
+            if usuario.is_ajuste:
+                return redirect(url_for("ajustes.index"))
             next_page = request.args.get("next", "")
             if "app" in next_page:
                 return redirect(url_for("pwa.app_view"))
@@ -29,10 +32,12 @@ def login():
 def login_app():
     if request.method == "POST":
         login_input = request.form.get("email", "").strip()
-        senha = request.form.get("senha", "")
-        usuario = Usuario.query.filter_by(email=login_input, ativo=True).first()
+        senha       = request.form.get("senha", "")
+        usuario     = Usuario.query.filter_by(email=login_input, ativo=True).first()
         if usuario and usuario.verificar_senha(senha):
             login_user(usuario, remember=True)
+            if usuario.is_ajuste:
+                return redirect(url_for("ajustes.index"))
             return redirect(url_for("pwa.app_view"))
         flash("Login ou senha incorretos.", "danger")
     return render_template("pwa/login_app.html")
