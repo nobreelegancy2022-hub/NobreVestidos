@@ -1,41 +1,236 @@
-from flask import Blueprint, render_template, redirect, url_for
-from flask_login import login_required, current_user
-from backend.app import db
-from backend.models.contrato import Contrato
-from datetime import date, timedelta
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#c2185b">
+  <title>Ajustes — Nobre Vestidos</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; -webkit-overflow-scrolling: touch; }
+    body {
+      background: #f8e8ef; color: #2a0d1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100%; padding-bottom: 30px;
+    }
 
-bp = Blueprint("ajustes", __name__, url_prefix="/ajustes")
+    .topbar {
+      background: #c2185b; padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid #e8b84b;
+    }
+    .topbar-marca { font-size: 1rem; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
+    .topbar-marca span { color: #e8b84b; }
+    .topbar-sub { font-size: 0.7rem; color: #fce4ec; }
+    .topbar-sair {
+      color: #fce4ec; font-size: 0.78rem; text-decoration: none;
+      padding: 4px 12px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+    }
 
-@bp.route("/")
-@login_required
-def index():
-    hoje = date.today()
-    limite = hoje + timedelta(days=7)
+    .conteudo { padding: 14px; }
 
-    # Contratos ativos com saída nos próximos 7 dias
-    contratos = Contrato.query.filter(
-        Contrato.status.in_(["ativo", "atrasado"]),
-        Contrato.data_retirada >= hoje,
-        Contrato.data_retirada <= limite
-    ).order_by(Contrato.data_retirada, Contrato.horario_saida).all()
+    .dia-header {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #c2185b;
+      background: #fde8f0; border: 1px solid #c2185b;
+      border-radius: 8px; padding: 7px 14px;
+      margin: 14px 0 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .dia-hoje { background: #c2185b; color: #fff; border-color: #e8b84b; }
+    .dia-hoje .dia-badge { background: #e8b84b; color: #1a0812; }
+    .dia-badge {
+      background: #c2185b; color: #fff; border-radius: 20px;
+      padding: 1px 8px; font-size: 0.68rem; font-weight: 700; margin-left: auto;
+    }
 
-    # Agrupar por data
-    por_dia = {}
-    for c in contratos:
-        dia = c.data_retirada
-        if dia not in por_dia:
-            por_dia[dia] = []
-        por_dia[dia].append(c)
+    .card-ajuste {
+      background: #fff0f5; border: 1px solid #c2185b;
+      border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+      transition: all 0.2s;
+    }
+    .card-ajuste.pronto {
+      border-color: #4ade80; background: #f0fff4;
+      opacity: 0.85;
+    }
 
-    return render_template("pwa/ajustes.html",
-                           por_dia=por_dia,
-                           hoje=hoje)
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-bottom: 1px solid #fde0ec;
+    }
+    .card-ajuste.pronto .card-header { border-color: #bbf7d0; }
+    .card-num { color: #e8b84b; font-weight: 700; font-size: 0.85rem; }
+    .card-hora { color: #c2185b; font-size: 0.78rem; font-weight: 600; }
+    .card-ajuste.pronto .card-hora { color: #4ade80; }
 
+    .card-body { padding: 10px 14px; }
 
-@bp.route("/<int:id>/toggle")
-@login_required
-def toggle(id):
-    contrato = Contrato.query.get_or_404(id)
-    contrato.ajuste_pronto = not contrato.ajuste_pronto
-    db.session.commit()
-    return redirect(url_for("ajustes.index"))
+    .campo-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #c2185b; margin-bottom: 2px;
+    }
+    .campo-ajuste.pronto .campo-label { color: #16a34a; }
+    .campo-val { font-size: 0.88rem; color: #2a0d1a; margin-bottom: 8px; }
+    .campo-val.destaque { font-weight: 600; color: #8b1a4a; }
+
+    .medidas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .medida-chip {
+      background: #fde8f0; border: 1px solid #f48fb1;
+      border-radius: 8px; padding: 5px 10px; font-size: 0.78rem;
+    }
+    .medida-chip .ml { font-size: 0.62rem; color: #c2185b; font-weight: 700; display: block; }
+    .medida-chip .mv { color: #2a0d1a; font-weight: 600; }
+
+    .obs-box {
+      background: #fff8e1; border: 1px solid #e8b84b;
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 0.82rem; color: #5a3a00; margin-bottom: 8px;
+    }
+    .obs-box .obs-label { font-size: 0.62rem; font-weight: 700; color: #e8b84b; display: block; margin-bottom: 2px; }
+
+    .acess-box {
+      background: #fde8f0; border: 1px solid #c2185b;
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 0.82rem; color: #2a0d1a; margin-bottom: 8px;
+    }
+    .acess-box .acess-label { font-size: 0.62rem; font-weight: 700; color: #c2185b; display: block; margin-bottom: 2px; }
+
+    .btn-toggle {
+      display: block; width: 100%; padding: 11px;
+      border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; text-align: center; text-decoration: none;
+      transition: all 0.2s; margin-top: 4px;
+    }
+    .btn-pendente { background: #fde8f0; color: #c2185b; border: 1px solid #c2185b; }
+    .btn-pendente:hover { background: #c2185b; color: #fff; }
+    .btn-pronto { background: #0d3321; color: #4ade80; border: 1px solid #4ade80; }
+    .btn-pronto:hover { background: #0a5025; }
+
+    .vazio {
+      text-align: center; padding: 3rem 1rem;
+      color: #c2185b; opacity: 0.6; font-size: 0.9rem;
+    }
+    .vazio i { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-marca">NOBRE <span>VESTIDOS</span></div>
+    <div class="topbar-sub">Tela de Ajustes</div>
+  </div>
+  <a href="/logout" class="topbar-sair">Sair</a>
+</div>
+
+<div class="conteudo">
+
+  {% if not por_dia %}
+  <div class="vazio">
+    <i class="bi bi-scissors"></i>
+    Nenhum contrato com saída nos próximos 7 dias.
+  </div>
+  {% endif %}
+
+  {% for dia, contratos in por_dia.items() %}
+  {% set eh_hoje = (dia == hoje) %}
+  <div class="dia-header {% if eh_hoje %}dia-hoje{% endif %}">
+    <i class="bi bi-calendar-event"></i>
+    {{ dia.strftime('%A, %d/%m/%Y').replace('Monday','Segunda').replace('Tuesday','Terça').replace('Wednesday','Quarta').replace('Thursday','Quinta').replace('Friday','Sexta').replace('Saturday','Sábado').replace('Sunday','Domingo') }}
+    <span class="dia-badge">{{ contratos|length }} contrato(s)</span>
+  </div>
+
+  {% for c in contratos %}
+  {% set obs_completa = c.observacoes or '' %}
+  {% set medidas = {} %}
+  {% if obs_completa %}
+    {% for linha in obs_completa.split('\n') %}
+      {% if ':' in linha %}
+        {% set partes = linha.split(':', 1) %}
+        {% set _ = medidas.update({partes[0].strip(): partes[1].strip()}) %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <div class="card-ajuste {% if c.ajuste_pronto %}pronto{% endif %}">
+    <div class="card-header">
+      <span class="card-num">#{{ "%04d"|format(c.id) }}</span>
+      <span class="card-hora">
+        {% if c.horario_saida %}
+          🕐 {{ c.horario_saida }}
+        {% else %}
+          Sem horário
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body">
+
+      <!-- Peças -->
+      {% for item in c.itens %}
+        {% if item.peca.tipo == 'Vestido' %}
+        <div class="campo-label">👗 Vestido</div>
+        <div class="campo-val destaque">
+          {{ item.peca.cor or '—' }}{% if item.peca.modelo %} · {{ item.peca.modelo }}{% endif %}
+          <span style="color:#c2185b;font-size:0.75rem;"> ({{ item.peca.codigo }})</span>
+        </div>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Medidas -->
+      {% set cor = medidas.get('Cor', '') %}
+      {% set modelo = medidas.get('Modelo', '') %}
+      {% set busto = medidas.get('Busto', '') %}
+      {% set cintura = medidas.get('Cintura', '') %}
+      {% set barra = medidas.get('Barra', '') %}
+      {% set alca = medidas.get('Alça', '') %}
+      {% set obs_med = medidas.get('Obs', '') %}
+
+      {% if busto or cintura or barra or alca %}
+      <div class="campo-label">📏 Medidas</div>
+      <div class="medidas-grid">
+        {% if busto %}<div class="medida-chip"><span class="ml">Busto</span><span class="mv">{{ busto }}</span></div>{% endif %}
+        {% if cintura %}<div class="medida-chip"><span class="ml">Cintura</span><span class="mv">{{ cintura }}</span></div>{% endif %}
+        {% if barra %}<div class="medida-chip"><span class="ml">Barra</span><span class="mv">{{ barra }}</span></div>{% endif %}
+        {% if alca %}<div class="medida-chip"><span class="ml">Alça</span><span class="mv">{{ alca }}</span></div>{% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Obs de medidas -->
+      {% if obs_med %}
+      <div class="obs-box">
+        <span class="obs-label">✏️ Observações da costureira</span>
+        {{ obs_med }}
+      </div>
+      {% endif %}
+
+      <!-- Acessórios -->
+      {% set acess = [] %}
+      {% for item in c.itens %}
+        {% if item.peca.tipo == 'Acessorio' %}
+          {% set _ = acess.append(item.peca.descricao or item.peca.codigo) %}
+        {% endif %}
+      {% endfor %}
+      {% if acess %}
+      <div class="acess-box">
+        <span class="acess-label">💎 Acessórios</span>
+        {{ acess | join(', ') }}
+      </div>
+      {% endif %}
+
+      <!-- Botão toggle -->
+      <a href="{{ url_for('ajustes.toggle', id=c.id) }}"
+         class="btn-toggle {% if c.ajuste_pronto %}btn-pronto{% else %}btn-pendente{% endif %}">
+        {% if c.ajuste_pronto %}✅ Ajuste Pronto{% else %}⏳ Marcar como Pronto{% endif %}
+      </a>
+
+    </div>
+  </div>
+  {% endfor %}
+  {% endfor %}
+
+</div>
+</body>
+</html>
